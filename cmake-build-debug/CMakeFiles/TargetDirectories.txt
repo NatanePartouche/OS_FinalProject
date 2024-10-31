@@ -1,0 +1,5 @@
+/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles/OS_finalProject.dir
+/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles/OS_finalProject_Tests.dir
+/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles/test.dir
+/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles/rebuild_cache.dir
