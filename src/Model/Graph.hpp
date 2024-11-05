@@ -46,33 +46,40 @@ protected:
 
 public:
     Graph(int vertices); // Constructor to initialize a graph with a given number of vertices.
-
-    // Adds an edge between vertices `u` and `v` with a specified weight.
-    void addEdge(int u, int v, int weight);
-
-    // Removes the edge between vertices `u` and `v`.
-    void removeEdge(int u, int v);
-
+    ~Graph();
+    void add_edge_on_Graph(int u, int v, int weight);
+    void remove_edge_on_Graph(int u, int v);
     // Changes the weight of the edge between vertices `u` and `v` to `newWeight`.
     void changeEdgeWeight(int u, int v, int newWeight);
-
     // Displays the graph structure, showing each vertex and its connected edges.
     std::string displayGraph();
-
     // Returns the total number of vertices in the graph.
     int getNumVertices();
+    // Returns a constant reference to the adjacency list, allowing access to the graph's structure.
+    const std::vector<std::list<std::pair<int, int>>>& getAdjList();
+    // Checks if a given vertex `v` is valid (within the range of defined vertices).
+    bool isValidVertex(int v) const;
+    // Compares this graph with another graph to see if they have the same structure and weights.
+    bool compareGraphs(Graph& other);
+    Graph& operator=(const Graph& other);
+
 
     // Returns the total weight of all edges in the graph.
     int getTotalWeight();
+    // Finds the longest path in the MST (returns a string representing the path in the format "0->9->...").
+    std::string getTreeDepthPath_MST();
+    // Retrieves the heaviest edge in the MST (returns a string in the format "u v w",
+    // where u and v are the vertices connected by the edge, and w is the edge weight).
+    std::string getMaxWeightEdge_MST();
+    // Finds the heaviest path in the MST and returns it as a string.
+    std::string getMaxWeightPath_MST();
+    // Retrieves the lightest edge in the MST (returns a string in the format "u v w").
+    std::string getMinWeightEdge_MST();
+    // Calculates the average distance between all pairs of vertices (Xi, Xj) in the MST.
+    double getAverageDistance_MST();
+    // Function to find the path between two vertices in an MST without calling a helper function
+    std::string findPath_MST(int u, int v);
 
-    // Returns a constant reference to the adjacency list, allowing access to the graph's structure.
-    const std::vector<std::list<std::pair<int, int>>>& getAdjList();
-
-    // Checks if a given vertex `v` is valid (within the range of defined vertices).
-    bool isValidVertex(int v) const;
-
-    // Compares this graph with another graph to see if they have the same structure and weights.
-    bool compareGraphs(Graph& other);
 };
 
 #endif // GRAPH_HPP

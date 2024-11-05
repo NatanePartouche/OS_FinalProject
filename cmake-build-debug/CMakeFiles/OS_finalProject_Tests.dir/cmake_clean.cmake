@@ -11,8 +11,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/OS_finalProject_Tests.dir/src/Network/ActiveObject.cpp.o.d"
   "CMakeFiles/OS_finalProject_Tests.dir/src/Network/Server.cpp.o"
   "CMakeFiles/OS_finalProject_Tests.dir/src/Network/Server.cpp.o.d"
-  "OS_finalProject_Tests"
-  "OS_finalProject_Tests.pdb"
+  "bin/OS_finalProject_Tests"
+  "bin/OS_finalProject_Tests.pdb"
 )
 
 # Per-language clean rules from dependency scanning.

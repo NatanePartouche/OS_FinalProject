@@ -225,13 +225,13 @@ OS_FinalProject_IS_TOP_LEVEL:STATIC=ON
 OS_FinalProject_SOURCE_DIR:STATIC=/home/ubuntu/CLionProjects/OS_FinalProject
 
 //Value Computed by CMake
-OS_finalProject_BINARY_DIR:STATIC=/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug
+Project_BINARY_DIR:STATIC=/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug
 
 //Value Computed by CMake
-OS_finalProject_IS_TOP_LEVEL:STATIC=ON
+Project_IS_TOP_LEVEL:STATIC=ON
 
 //Value Computed by CMake
-OS_finalProject_SOURCE_DIR:STATIC=/home/ubuntu/CLionProjects/OS_FinalProject
+Project_SOURCE_DIR:STATIC=/home/ubuntu/CLionProjects/OS_FinalProject
 
 
 ########################

@@ -1,217 +1,162 @@
 #include "Server.hpp"
-#include "../../src/Model/MST.hpp"
-#include <sstream>
-#include <unistd.h>
-#include <cstring>
+
 #include <iostream>
+#include <thread>
 #include <netinet/in.h>
+#include <unistd.h>
+#include <sstream>
+#include <string>
+#include <queue>
+#include <condition_variable>
+#include <mutex>
+#include <set>
+#include <vector>
+#include <cstring>
 #include <sys/socket.h>
+#include <memory>
+#include <tuple>
+#include "../../src/Model/Graph.hpp"
+#include "../../src/Model/MSTFactory.hpp"
+#include "../../src/Network/Pipeline.hpp"
+#include "../../src/Network/ActiveObject.hpp"
 
-Server::Server(int port, int poolSize) : serverPort(port), serverSocket(-1), running(true) {
-    for (int i = 0; i < poolSize; ++i) {
-        aoPool.push_back(std::make_shared<ActiveObject>());
-    }
+// Constructeur
+Server::Server() : serverRunning(true), activeClients(0), serverFd(-1) {
+    std::cout << "Server instance created." << std::endl;
 }
 
-Server::~Server() {stop();}
+// Destructeur pour libérer les ressources
+Server::~Server() {
+    if (serverFd != -1) {
+        shutdown(serverFd, SHUT_RDWR);
+        close(serverFd);
+    }
+    closeAllClients();
+    std::cout << "Server instance destroyed and resources freed." << std::endl;
+}
 
-void Server::start() {
-    serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-    if (serverSocket < 0) {
-        perror("Erreur lors de la création du socket serveur");
+// Main server function using the Leader-Follower pattern
+void Server::runServer(){
+    struct sockaddr_in address;       // Structure for socket address
+    int opt = 1;                      // Option for setting socket options
+    int addrlen = sizeof(address);    // Length of the address
+    int newSocket;                    // Socket for new client connections
+
+    // Create an ActiveObject with a thread pool of THREAD_POOL_SIZE
+    ActiveObject activeObject(THREAD_POOL_SIZE);
+
+    // Create the server socket
+    if ((serverFd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
+        perror("Socket failed"); // Print error if socket creation fails
+        exit(EXIT_FAILURE);
+    }
+    // Set socket options
+    if (setsockopt(serverFd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) {
+        perror("setsockopt"); // Print error if setting options fails
+        exit(EXIT_FAILURE);
+    }
+    address.sin_family = AF_INET; // IPv4
+    address.sin_addr.s_addr = INADDR_ANY; // Accept connections on any IP address
+    address.sin_port = htons(PORT); // Set the port for the server
+    // Bind the socket to the port
+    if (bind(serverFd, (struct sockaddr *)&address, sizeof(address)) < 0){
+        perror("Bind failed"); // Print error if binding fails
+        exit(EXIT_FAILURE);
+    }
+    // Start listening for client connections
+    if (listen(serverFd, 10) < 0) {
+        perror("Listen failed"); // Print error if listening fails
         exit(EXIT_FAILURE);
     }
 
-    sockaddr_in serverAddress = {};
-    serverAddress.sin_family = AF_INET;
-    serverAddress.sin_addr.s_addr = INADDR_ANY;
-    serverAddress.sin_port = htons(serverPort);
+    std::cout << "Server is running and listening on port " << PORT << std::endl; // Print server start message
 
-    if (bind(serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0) {
-        perror("Erreur lors de la liaison du socket");
-        exit(EXIT_FAILURE);
+    // Create a thread pool for handling client requests
+    std::vector<std::thread> threadPool;
+    for (int i = 0; i < THREAD_POOL_SIZE; ++i){
+        threadPool.emplace_back([&](){
+            // While the server is running
+            while (serverRunning) {
+                int clientSocket;
+
+                // Leader-Follower mechanism: One thread acts as the leader and processes new connections
+                {
+                    std::unique_lock<std::mutex> lock(leaderMutex);
+                    leaderCV.wait(lock, [&]() { return !clientQueue.empty() || !serverRunning; }); // Wait for new connections
+                    // If the server is shutting down, exit the loop
+                    if (!serverRunning) {return;}
+                    // If there are client connections waiting
+                    if (!clientQueue.empty()) {
+                        clientSocket = clientQueue.front(); // Get the next client socket
+                        clientQueue.pop(); // Remove it from the queue
+                    }
+                }
+
+                // Process client requests asynchronously using the ActiveObject pattern
+                activeObject.enqueueTask([this, clientSocket]() {
+                    handleClient(clientSocket); // Handle the client in a separate task
+                });
+            }
+        });
     }
-    if (listen(serverSocket, 5) < 0) {
-        perror("Erreur lors de l'écoute du socket");
-        exit(EXIT_FAILURE);
-    }
 
-    std::cout << "Serveur démarré et en écoute sur le port " << serverPort << std::endl;
-
-    while (running) {
-        int clientSocket = accept(serverSocket, nullptr, nullptr);
-        if (clientSocket >= 0) {
-            auto& ao = aoPool[nextAoIndex % aoPool.size()];
-            nextAoIndex++;
-            clients[clientSocket] = ao;
-
-            ao->enqueueTask([this, clientSocket, ao]() {
-                this->handleClient(clientSocket, ao);
-            });
+    // Thread to listen for a shutdown command from the server console
+    std::thread shutdownThread([&](){
+        std::string input;
+        // While the server is running
+        while (serverRunning) {
+            std::cin >> input; // Wait for user input in the console
+            // If the input is "shutdown"
+            if (input == "shutdown") {
+                std::cout << "Server shutting down...\n"; // Print shutdown message
+                serverRunning = false;  // Set the server running flag to false
+                // Shut down the server socket to stop accepting new connections
+                shutdown(serverFd, SHUT_RDWR); // Disable read/write operations on the server socket
+                close(serverFd);  // Close the server socket
+                closeAllClients(); // Close all active client connections
+                leaderCV.notify_all();  // Wake up all waiting threads to stop
+                break;
+            }
         }
-    }
-}
-
-void Server::stop() {
-    running = false;
-    if (serverSocket >= 0) {
-        close(serverSocket);
-    }
-    for (auto& [socket, ao] : clients) {
-        close(socket);
-        ao->stop();
-    }
-    clients.clear();
-}
-
-void Server::handleClient(int clientSocket, std::shared_ptr<ActiveObject> ao) {
-
-    auto graph = std::make_shared<Graph>(0);
-    auto mst = std::make_shared<MST>(*graph, "Kruskal");
-
-    // Initialisation du graphe avec les paramètres du client
-    auto graphParameters = requestGraphParametersFromClient(clientSocket);
-    int numVertices = std::get<0>(graphParameters);
-    std::vector<std::tuple<int, int, int>> edges = std::get<2>(graphParameters);
-    std::string algorithmChoice = std::get<3>(graphParameters);
-
-    // Tâche asynchrone d'initialisation du graphe
-    ao->enqueueTask([clientSocket, numVertices, edges, algorithmChoice, graph, mst]() {
-        *graph = Graph(numVertices);
-        for (const auto& edge : edges) {
-            graph->addEdge(std::get<0>(edge), std::get<1>(edge), std::get<2>(edge));
-        }
-        *mst = MST(*graph, algorithmChoice);
-        std::string response = "Graph and MST initialized successfully.\n";
-        send(clientSocket, response.c_str(), response.size(), 0);
     });
 
-    // Boucle pour gérer les commandes du client
-    int choice = 0;
-    char buffer[1024] = {0};
-    while (choice != 9) {
-
-        // Envoi du menu au client
-        std::string menu = "\nPlease select an operation from the list below:\n"
-                           "1. Calculate the total weight of the MST\n"
-                           "2. Find the longest path between any two vertices in the MST\n"
-                           "3. Calculate the average path length between all vertex pairs in the MST\n"
-                           "4. Find the shortest path between two specified vertices\n"
-                           "5. Add a new edge to the graph\n"
-                           "6. Remove an existing edge from the graph\n"
-                           "7. Create a new graph\n"
-                           "8. Display the current graph\n"
-                           "9. Exit\n"
-                           "Enter the number corresponding to your choice : ";
-        send(clientSocket, menu.c_str(), menu.size(), 0);
-
-        int valread = read(clientSocket, buffer, 1024);
-        if (valread <= 0) {
-            std::cout << "Client déconnecté.\n";
-            return;
+    // Main loop to accept new client connections
+    while (serverRunning){
+        newSocket = accept(serverFd, (struct sockaddr *)&address, (socklen_t *)&addrlen); // Accept a new client connection
+        // If a new client is connected
+        if (newSocket >= 0) {
+            std::cout << "New client connection accepted.\n"; {
+                std::lock_guard<std::mutex> lock(leaderMutex);
+                clientQueue.push(newSocket); // Add the client socket to the queue
+            }
+            leaderCV.notify_one(); // Notify a thread to handle this client
         }
-        choice = std::stoi(std::string(buffer));
-
-        switch (choice) {
-            case 1: {  // Calculer le poids total du MST
-                ao->enqueueTask([clientSocket, mst]() {
-                    std::string response = "\nThe total weight of the MST is: " + std::to_string(mst->getTotalWeight()) + "\n\n";
-                    send(clientSocket, response.c_str(), response.size(), 0);
-                });
-                break;
-            }
-            case 2: {  // Trouver le chemin le plus long dans le MST
-                ao->enqueueTask([clientSocket, mst]() {
-                    std::string response = "\nLongest path calculated.\n";
-                    send(clientSocket, response.c_str(), response.size(), 0);
-                });
-                break;
-            }
-            case 3: {  // Calculer la distance moyenne dans le MST
-                ao->enqueueTask([clientSocket, mst]() {
-                    std::string response = "\nAverage path length calculated.\n";
-                    send(clientSocket, response.c_str(), response.size(), 0);
-                });
-                break;
-            }
-            case 4: {  // Trouver le chemin le plus court entre deux sommets
-                ao->enqueueTask([clientSocket, mst]() {
-                    std::string response = "Shortest path found.\n";
-                    send(clientSocket, response.c_str(), response.size(), 0);
-                });
-                break;
-            }
-            case 5: {  // Ajouter une nouvelle arête
-                ao->enqueueTask([clientSocket, graph]() {
-                    send(clientSocket, "Enter edge to add in format <u> <v> <weight>:\n", 45, 0);
-                    char buffer[1024];
-                    int valread = read(clientSocket, buffer, 1024);
-                    if (valread > 0) {
-                        std::istringstream iss(buffer);
-                        int u, v, weight;
-                        iss >> u >> v >> weight;
-                        graph->addEdge(u, v, weight);
-                        std::string response = "Edge added successfully.\n";
-                        send(clientSocket, response.c_str(), response.size(), 0);
-                    }
-                });
-                break;
-            }
-            case 6: {  // Supprimer une arête existante
-                ao->enqueueTask([clientSocket, graph]() {
-                    send(clientSocket, "Enter edge to remove in format <u> <v>:\n", 39, 0);
-                    char buffer[1024];
-                    int valread = read(clientSocket, buffer, 1024);
-                    if (valread > 0) {
-                        std::istringstream iss(buffer);
-                        int u, v;
-                        iss >> u >> v;
-                        graph->removeEdge(u, v);
-                        std::string response = "Edge removed successfully.\n";
-                        send(clientSocket, response.c_str(), response.size(), 0);
-                    }
-                });
-                break;
-            }
-            case 7: {  // Créer un nouveau graphe
-                auto newGraphParameters = this->requestGraphParametersFromClient(clientSocket);
-                int newNumVertices = std::get<0>(newGraphParameters);
-                std::vector<std::tuple<int, int, int>> newEdges = std::get<2>(newGraphParameters);
-                std::string newAlgorithmChoice = std::get<3>(newGraphParameters);
-
-                ao->enqueueTask([this, clientSocket, graph, mst, newNumVertices, newEdges, newAlgorithmChoice]() {
-                    *graph = Graph(newNumVertices);
-                    for (const auto& edge : newEdges) {
-                        graph->addEdge(std::get<0>(edge), std::get<1>(edge), std::get<2>(edge));
-                    }
-                    *mst = MST(*graph, newAlgorithmChoice);
-
-                    std::string response = "New graph and MST created successfully.\n";
-                    send(clientSocket, response.c_str(), response.size(), 0);
-                });
-                break;
-            }
-            case 8: {  // Afficher le graphe actuel
-                ao->enqueueTask([clientSocket, mst]() {
-                    std::string response = "\n" + mst->displayGraph() + "\n";
-                    send(clientSocket, response.c_str(), response.size(), 0);
-                });
-                break;
-            }
-            case 9: {  // Quitter le menu
-                ao->enqueueTask([clientSocket]() {
-                    send(clientSocket, "Exiting the menu.\n", 18, 0);
-                });
-                break;
-            }
-            default: {
-                ao->enqueueTask([clientSocket]() {
-                    send(clientSocket, "Invalid choice. Please enter a number between 1 and 9.\n", 55, 0);
-                });
-                break;
-            }
-        }
+         // If the server is shutting down. Exit the loop
+        else if (!serverRunning){break; }
     }
+
+    // Wait for the shutdown thread to finish
+    shutdownThread.join();
+
+    // Join all threads to ensure they finish gracefully
+    for (auto &th : threadPool){
+        // If the thread can be joined. Wait for it to finish
+        if (th.joinable()) {th.join();}
+    }
+
+    std::cout << "Server has shut down immediately.\n"; // Print shutdown message
+}
+
+// Function to close all active client connections
+void Server::closeAllClients(){
+    std::lock_guard<std::mutex> lock(clientSocketMutex); // Lock the mutex to ensure thread safety
+    // Iterate through all active client sockets
+    for (int clientSocket : activeClientSockets) {
+        shutdown(clientSocket, SHUT_RDWR); // Disable both reading and writing on the client socket
+        close(clientSocket); // Close the socket
+        std::cout << "Closed client socket: " << clientSocket << std::endl; // Output a message about the closed client socket
+    }
+    activeClientSockets.clear(); // Clear the set of active clients
 }
 
 std::tuple<int, int, std::vector<std::tuple<int, int, int>>, std::string> Server::requestGraphParametersFromClient(int newSocket) {
@@ -316,4 +261,207 @@ std::tuple<int, int, std::vector<std::tuple<int, int, int>>, std::string> Server
 
     // Retourne tous les paramètres, y compris le choix de l'algorithme
     return {numVertices, numEdges, edges, choice};
+}
+
+// Function to handle a single client connection
+void Server::handleClient(int clientSocket) {
+    char buffer[BUFFER_SIZE] = {0}; // Buffer to store incoming client data
+
+    ////////////////////////////////////////////////////////////////////////////////
+    std::unique_ptr<Graph> graph;            // Pointer to store the client's graph
+    std::unique_ptr<Graph> mst;              // Pointer to store the client's computed MST
+    std::string algorithmChoice = "prim";    // Store the chosen algorithm for MST computation
+    MSTFactory* algo = nullptr;              // Pointer to MST algorithm factory
+    ////////////////////////////////////////////////////////////////////////////////
+
+    // Add the client socket to the set of active clients
+    {
+        std::lock_guard<std::mutex> lock(clientSocketMutex);
+        activeClientSockets.insert(clientSocket);
+    }
+    activeClients++; // Increment the counter of active clients
+
+    // Display the help menu with available commands
+    std::string helpMenu = "------------------ COMMAND MENU ------------------\n";
+    helpMenu += "Create a new graph:\n";
+    helpMenu += "   - Syntax: 'create <number_of_vertices>'\n";
+    helpMenu += "   - Example: 'create 5' to create a graph with 5 vertices.\n";
+    helpMenu += "Add an edge:\n";
+    helpMenu += "   - Syntax: 'add <u> <v> <w>'\n";
+    helpMenu += "   - Example: 'add 1 2 10' to add an edge between vertices 1 and 2 with weight 10.\n";
+    helpMenu += "Remove an edge:\n";
+    helpMenu += "   - Syntax: 'remove <u> <v>'\n";
+    helpMenu += "   - Example: 'remove 1 2' to remove the edge between vertices 1 and 2.\n";
+    helpMenu += "Choose MST Algorithm:\n";
+    helpMenu += "   - Syntax: 'algorithm <algorithm_name>'\n";
+    helpMenu += "   - Available: prim, kruskal, boruvka, tarjan, integer_mst\n";
+    helpMenu += "Display MST and Analysis:\n";
+    helpMenu += "   - Syntax: 'display'\n";
+    helpMenu += "   - Shows the Graph, MST and an analysis summary.\n";
+    helpMenu += "Shutdown:\n";
+    helpMenu += "   - Syntax: 'shutdown'\n";
+    helpMenu += "   - Closes the connection with the server.\n";
+    helpMenu += "--------------------------------------------------\n";
+    send(clientSocket, helpMenu.c_str(), helpMenu.size(), 0);
+
+    while (serverRunning) {
+
+        int bytesRead = read(clientSocket, buffer, BUFFER_SIZE); // Read data from the client
+        if (bytesRead <= 0) { // If no data is read, assume the client disconnected
+            std::cout << "Client disconnected.\n";
+            break;
+        }
+
+        std::string request(buffer, bytesRead);
+        std::stringstream ss(request);
+        std::string command;
+        ss >> command;
+
+        // Create a pipeline to handle multiple steps in sequence
+        Pipeline pipeline;
+
+        // Handle the "create" command to create a new graph
+        if (command == "create") {
+            pipeline.addStep([&]() {
+                int size;
+                ss >> size; // Read graph size (number of vertices)
+                graph = std::make_unique<Graph>(size); // Create a new graph
+                std::string response = "Graph created with " + std::to_string(size) + " vertices.\n";
+                send(clientSocket, response.c_str(), response.size(), 0); // Send response
+            });
+        }
+        // Handle the "add" command to add an edge to the graph
+        else if (command == "add") {
+            pipeline.addStep([&]() {
+                if (!graph) {
+                    std::string response = "Graph not created. Use 'create' first.\n";
+                    send(clientSocket, response.c_str(), response.size(), 0);
+                    return;
+                }
+                int u, v, weight;
+                ss >> u >> v >> weight; // Read vertices and edge weight
+                graph->add_edge_on_Graph(u, v, weight); // Add edge to the graph
+                std::string response = "Edge added: (" + std::to_string(u) + ", " + std::to_string(v) + ") with weight " + std::to_string(weight) + "\n";
+                send(clientSocket, response.c_str(), response.size(), 0);
+            });
+        }
+        // Handle the "remove" command to remove an edge from the graph
+        else if (command == "remove") {
+            pipeline.addStep([&]() {
+                if (!graph) {
+                    std::string response = "Graph not created. Use 'create' first.\n";
+                    send(clientSocket, response.c_str(), response.size(), 0);
+                    return;
+                }
+                int u, v;
+                ss >> u >> v; // Read vertices of edge to remove
+                graph->remove_edge_on_Graph(u, v); // Remove edge
+                std::string response = "Edge removed: (" + std::to_string(u) + ", " + std::to_string(v) + ")\n";
+                send(clientSocket, response.c_str(), response.size(), 0);
+            });
+        }
+        // Handle the "algo" command to set MST algorithm
+        else if (command == "algo") {
+            pipeline.addStep([&]() {
+                std::string selectedAlgorithm;
+                ss >> selectedAlgorithm;
+
+                // Check if the algorithm choice is valid before updating algorithmChoice
+                if (selectedAlgorithm == "prim" || selectedAlgorithm == "kruskal" ||
+                    selectedAlgorithm == "boruvka" || selectedAlgorithm == "tarjan" ||
+                    selectedAlgorithm == "integer_mst") {
+
+                    algorithmChoice = selectedAlgorithm; // Update algorithm choice if valid
+                    std::string response = "Algorithm set to " + algorithmChoice + ".\n";
+                    send(clientSocket, response.c_str(), response.size(), 0);
+                } else {
+                    // Send an error response if the algorithm choice is invalid
+                    std::string response = "Error: Unknown algorithm '" + selectedAlgorithm + "'. Available options: prim, kruskal, boruvka, tarjan, integer_mst.\n";
+                    send(clientSocket, response.c_str(), response.size(), 0);
+                }
+            });
+        }
+        // Handle the "display" command to compute and display the MST
+        else if (command == "display") {
+            pipeline.addStep([&]() {
+                if (!graph) {
+                    std::string response = "Graph not created.\n";
+                    send(clientSocket, response.c_str(), response.size(), 0);
+                    return;
+                }
+
+                // Set MST algorithm based on the user's choice
+                if (algorithmChoice == "prim") algo = new PrimSolver();
+                else if (algorithmChoice == "kruskal") algo = new KruskalSolver();
+                else if (algorithmChoice == "boruvka") algo = new BoruvkaSolver();
+                else if (algorithmChoice == "tarjan") algo = new TarjanSolver();
+                else if (algorithmChoice == "integer_mst") algo = new IntegerMSTSolver();
+
+                if (algo) {
+                    mst = std::make_unique<Graph>(algo->solveMST(*graph)); // Compute MST
+                    delete algo;
+                } else {
+                    std::string response = "Unknown algorithm.\n";
+                    send(clientSocket, response.c_str(), response.size(), 0);
+                    return;
+                }
+
+                std::string response = graph->displayGraph();
+                response += mst->displayGraph();
+
+                // MST analysis metrics
+                int totalWeight = mst->getTotalWeight();
+                std::string longestPath = mst->getTreeDepthPath_MST();
+                std::string heaviestEdge = mst->getMaxWeightEdge_MST();
+                std::string heaviestPath = mst->getMaxWeightPath_MST();
+                std::string lightestEdge = mst->getMinWeightEdge_MST();
+                double averageDistance = mst->getAverageDistance_MST();
+
+                response += "- - - MST Analysis - - -\n";
+                response += "Algorithm: " + algorithmChoice + "\n";
+                response += "Total MST weight: " + std::to_string(totalWeight) + "\n";
+                response += "Longest path: " + longestPath + "\n";
+                response += "Heaviest path: " + heaviestPath + "\n";
+                response += "Average distance: " + std::to_string(averageDistance) + "\n";
+                response += "Heaviest edge: " + heaviestEdge + "\n";
+                response += "Lightest edge: " + lightestEdge + "\n";
+
+                send(clientSocket, response.c_str(), response.size(), 0);
+            });
+        }
+        // Handle the "shutdown" command to terminate client connection
+        else if (command == "shutdown") {
+            pipeline.addStep([&]() {
+                std::string response = "Shutting down client.\n";
+                send(clientSocket, response.c_str(), response.size(), 0);
+                std::cout << "Client initiated shutdown.\n";
+
+                close(clientSocket); // Close client socket
+                {
+                    std::lock_guard<std::mutex> lock(clientSocketMutex);
+                    activeClientSockets.erase(clientSocket); // Remove from active set
+                }
+                activeClients--; // Decrement active client count
+                return; // Exit the loop for this client
+            });
+        }
+        // Handle unknown command
+        else {
+            pipeline.addStep([&]() {
+                std::string response = "Unknown command.\n";
+                send(clientSocket, response.c_str(), response.size(), 0);
+            });
+        }
+
+        // Execute all steps in the pipeline for this command
+        pipeline.execute();
+    }
+
+    // Ensure client is removed from active set and socket is closed if not done earlier
+    {
+        std::lock_guard<std::mutex> lock(clientSocketMutex);
+        activeClientSockets.erase(clientSocket); // Remove from active set
+    }
+    close(clientSocket); // Close client socket
+    std::cout << "Client socket closed.\n"; // Log socket closure
 }

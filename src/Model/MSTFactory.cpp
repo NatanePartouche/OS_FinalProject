@@ -1,5 +1,4 @@
 #include "MSTFactory.hpp"
-#include "MST.hpp"
 #include <algorithm>
 #include <vector>
 #include <tuple>
@@ -40,7 +39,7 @@ Graph PrimSolver::solveMST(Graph& graph) {
     int edgeCount = 0;
     for (int v = 1; v < V; ++v) {
         if (parent[v] != -1) {
-            mst.addEdge(parent[v], v, key[v]);
+            mst.add_edge_on_Graph(parent[v], v, key[v]);
             edgeCount++;
         }
     }
@@ -71,7 +70,7 @@ Graph KruskalSolver::solveMST(Graph& graph) {
     int edgeCount = 0;
     for (const auto& [weight, u, v] : edges) {
         if (uf.unionSets(u, v)) {
-            mst.addEdge(u, v, weight);
+            mst.add_edge_on_Graph(u, v, weight);
             edgeCount++;
         }
     }
@@ -129,7 +128,7 @@ Graph BoruvkaSolver::solveMST(Graph& graph) {
                 int weight = cheapest[i].first;
 
                 if (uf.unionSets(u, v)) {
-                    mst.addEdge(u, v, weight);
+                    mst.add_edge_on_Graph(u, v, weight);
                     --numComponents;
                     edgeCount++;
                     merged = true;  // A merge happened, so progress was made
@@ -170,7 +169,7 @@ Graph TarjanSolver::solveMST(Graph& graph) {
     int edgeCount = 0;
     for (const auto& [weight, u, v] : edges) {
         if (uf.unionSets(u, v)) {
-            mst.addEdge(u, v, weight);
+            mst.add_edge_on_Graph(u, v, weight);
             edgeCount++;
         }
     }
@@ -215,7 +214,7 @@ Graph IntegerMSTSolver::solveMST(Graph& graph) {
 
     for (int v = 1; v < V; ++v) {
         if (parent[v] != -1) {
-            mst.addEdge(parent[v], v, key[v]);
+            mst.add_edge_on_Graph(parent[v], v, key[v]);
             edgeCount++;
         }
     }

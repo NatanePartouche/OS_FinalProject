@@ -5,7 +5,6 @@
 
 
 class MSTFactory {
-
 public:
     // Virtual destructor to ensure proper cleanup of derived classes
     virtual ~MSTFactory() = default;
@@ -70,11 +69,12 @@ public:
 };
 
 
-
 // Union-Find with path compression and union by rank
 class UnionFind {
 public:
     UnionFind(int n) : parent(n), rank(n, 0) {for (int i = 0; i < n; ++i) parent[i] = i;}
+
+    ~UnionFind() = default;
 
     int find(int u) {
         if (u != parent[u]) parent[u] = find(parent[u]);

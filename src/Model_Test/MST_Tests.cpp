@@ -1,9 +1,14 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "../../src/Model_Test/doctest.h"
 #include "../../src/Model/Graph.hpp"
-#include "../../src/Model/MST.hpp"
+#include "../../src/Model/MSTFactory.hpp"
 
-// Test case for the constructor and initial properties
+MSTFactory* solverPrim = new PrimSolver();
+MSTFactory* solverKruskal = new KruskalSolver();
+MSTFactory* solverBoruvka = new BoruvkaSolver();
+MSTFactory* solverTarjan = new TarjanSolver();
+MSTFactory* solverIntegerMST = new IntegerMSTSolver();
+
 TEST_CASE("Graph: Constructor and Initial State") {
     Graph g(5);
     CHECK(g.getNumVertices() == 5);
@@ -11,13 +16,12 @@ TEST_CASE("Graph: Constructor and Initial State") {
     CHECK(g.getAdjList().size() == 5);
 }
 
-// Test case for adding edges and verifying the graph structure
 TEST_CASE("Graph: Adding Edges") {
     Graph g(4);
 
-    g.addEdge(0, 1, 10);
-    g.addEdge(0, 2, 5);
-    g.addEdge(1, 2, 7);
+    g.add_edge_on_Graph(0, 1, 10);
+    g.add_edge_on_Graph(0, 2, 5);
+    g.add_edge_on_Graph(1, 2, 7);
 
     CHECK(g.getTotalWeight() == 22);
     CHECK(g.getAdjList()[0].size() == 2);
@@ -31,15 +35,14 @@ TEST_CASE("Graph: Adding Edges") {
     CHECK(g.getAdjList()[0].back().second == 5);
 }
 
-// Test case for removing edges
 TEST_CASE("Graph: Removing Edges") {
     Graph g(4);
 
-    g.addEdge(0, 1, 10);
-    g.addEdge(0, 2, 5);
-    g.addEdge(1, 2, 7);
+    g.add_edge_on_Graph(0, 1, 10);
+    g.add_edge_on_Graph(0, 2, 5);
+    g.add_edge_on_Graph(1, 2, 7);
 
-    g.removeEdge(0, 1);
+    g.remove_edge_on_Graph(0, 1);
 
     // Check the total weight after removal
     CHECK(g.getTotalWeight() == 12);  // 5 + 7
@@ -49,13 +52,12 @@ TEST_CASE("Graph: Removing Edges") {
     CHECK(g.getAdjList()[1].size() == 1);
 }
 
-// Test case for changing the edge weight
 TEST_CASE("Graph: Changing Edge Weights") {
     Graph g(4);
 
-    g.addEdge(0, 1, 10);
-    g.addEdge(0, 2, 5);
-    g.addEdge(1, 2, 7);
+    g.add_edge_on_Graph(0, 1, 10);
+    g.add_edge_on_Graph(0, 2, 5);
+    g.add_edge_on_Graph(1, 2, 7);
 
     // Modify the weight of the edge between 0 and 2
     g.changeEdgeWeight(0, 2, 15);
@@ -66,7 +68,6 @@ TEST_CASE("Graph: Changing Edge Weights") {
     CHECK(g.getAdjList()[0].back().second == 15);
 }
 
-// Test case for checking vertex validity
 TEST_CASE("Graph: Vertex Validity") {
     Graph g(5);
     CHECK(g.isValidVertex(0) == true);
@@ -75,12 +76,11 @@ TEST_CASE("Graph: Vertex Validity") {
     CHECK(g.isValidVertex(-1) == false);
 }
 
-// Test case for recalculating total weight after modifications
 TEST_CASE("Graph: Recalculate Total Weight") {
     Graph g(3);
 
-    g.addEdge(0, 1, 4);
-    g.addEdge(1, 2, 6);
+    g.add_edge_on_Graph(0, 1, 4);
+    g.add_edge_on_Graph(1, 2, 6);
 
     CHECK(g.getTotalWeight() == 10);
 
@@ -90,252 +90,204 @@ TEST_CASE("Graph: Recalculate Total Weight") {
     CHECK(g.getTotalWeight() == 14);
 
     // Remove an edge and check the total weight
-    g.removeEdge(1, 2);
+    g.remove_edge_on_Graph(1, 2);
     CHECK(g.getTotalWeight() == 8);
 }
 
-// Test case for an empty graph
 TEST_CASE("Graph: Empty Graph") {
     Graph g(0);  // Graph with 0 vertices
     CHECK(g.getNumVertices() == 0);
     CHECK(g.getTotalWeight() == 0);
 
-    // Trying to add an edge to a graph with no vertices should do nothing
-    g.addEdge(0, 1, 10);
+    // Trying to add_edge_on_Graph an edge to a graph with no vertices should do nothing
+    g.add_edge_on_Graph(0, 1, 10);
     CHECK(g.getTotalWeight() == 0);
-    CHECK(g.getAdjList().size() == 0);  // No vertices to add edges to
+    CHECK(g.getAdjList().size() == 0);  // No vertices to add_edge_on_Graph edges to
 }
 
-// Test case for invalid operations
 TEST_CASE("Graph: Invalid Operations") {
     Graph g(3);
 
-    // Attempt to add/remove/change edges with invalid vertex indices
-    g.addEdge(0, 3, 10);  // Vertex 3 does not exist
-    g.addEdge(-1, 2, 5);  // Negative index
+    // Attempt to add_edge_on_Graph/remove_edge_on_Graph/change edges with invalid vertex indices
+    g.add_edge_on_Graph(0, 3, 10);  // Vertex 3 does not exist
+    g.add_edge_on_Graph(-1, 2, 5);  // Negative index
     CHECK(g.getTotalWeight() == 0);  // No edges should have been added
 
-    g.removeEdge(0, 3);  // Invalid removal
+    g.remove_edge_on_Graph(0, 3);  // Invalid removal
     g.changeEdgeWeight(0, 3, 20);  // Invalid weight change
     CHECK(g.getTotalWeight() == 0);  // Total weight should remain 0
-}
-
-// Test case for the default constructor
-TEST_CASE("MST: Default Constructor") {
-    MST mst;
-    CHECK(mst.getNumVertices() == 0);
-    CHECK(mst.getTotalWeight() == 0);
 }
 
 TEST_CASE("Test MST with an undirected graph of 3 vertices") {
     // Create a test graph
     Graph graph(3);
-    graph.addEdge(0, 1, 2);  // 0 - 1
-    graph.addEdge(1, 2, 3);  // 1 - 2
-    graph.addEdge(0, 2, 10); // 0 - 2
+    graph.add_edge_on_Graph(0, 1, 2);  // 0 - 1
+    graph.add_edge_on_Graph(1, 2, 3);  // 1 - 2
+    graph.add_edge_on_Graph(0, 2, 10); // 0 - 2
 
     // Expected Minimum Spanning Tree
     Graph expectedMST(3);
-    expectedMST.addEdge(0, 1, 2);  // 0 - 1
-    expectedMST.addEdge(1, 2, 3);  // 1 - 2
+    expectedMST.add_edge_on_Graph(0, 1, 2);  // 0 - 1
+    expectedMST.add_edge_on_Graph(1, 2, 3);  // 1 - 2
 
-    std::string temp = "PRIM";
-
-    // Test with each MST algorithm
-    MST mstPrim(graph, temp);
+    Graph mstPrim = solverPrim->solveMST(graph);
     CHECK(mstPrim.compareGraphs(expectedMST));
 
-    temp = "KRUSKAL";
-
-    MST mstKruskal(graph,temp);
+    Graph mstKruskal = solverKruskal->solveMST(graph);
     CHECK(mstKruskal.compareGraphs(expectedMST));
 
-    temp = "BORUVKA";
-
-    MST mstBoruvka(graph, temp);
+    Graph mstBoruvka = solverBoruvka->solveMST(graph);
     CHECK(mstBoruvka.compareGraphs(expectedMST));
 
-    temp = "TARJAN";
-
-    MST mstTarjan(graph, temp);
+    Graph mstTarjan = solverTarjan->solveMST(graph);
     CHECK(mstTarjan.compareGraphs(expectedMST));
 
-    temp = "INTEGER_MST";
-
-    MST mstInteger(graph,temp);
+    Graph mstInteger = solverIntegerMST->solveMST(graph);
     CHECK(mstInteger.compareGraphs(expectedMST));
 }
 
 TEST_CASE("Test MST with an undirected graph of 5 vertices") {
     Graph graph(5);
-    graph.addEdge(0, 1, 2);
-    graph.addEdge(1, 2, 3);
-    graph.addEdge(0, 3, 6);
-    graph.addEdge(1, 4, 5);
-    graph.addEdge(3, 1, 8);
-    graph.addEdge(4, 2, 7);
+    graph.add_edge_on_Graph(0, 1, 2);
+    graph.add_edge_on_Graph(1, 2, 3);
+    graph.add_edge_on_Graph(0, 3, 6);
+    graph.add_edge_on_Graph(1, 4, 5);
+    graph.add_edge_on_Graph(3, 1, 8);
+    graph.add_edge_on_Graph(4, 2, 7);
 
     Graph expectedMST(5);
-    expectedMST.addEdge(0, 1, 2);
-    expectedMST.addEdge(1, 2, 3);
-    expectedMST.addEdge(0, 3, 6);
-    expectedMST.addEdge(1, 4, 5);
+    expectedMST.add_edge_on_Graph(0, 1, 2);
+    expectedMST.add_edge_on_Graph(1, 2, 3);
+    expectedMST.add_edge_on_Graph(0, 3, 6);
+    expectedMST.add_edge_on_Graph(1, 4, 5);
 
-    std::string temp = "PRIM";
-
-    // Test with each MST algorithm
-    MST mstPrim(graph, temp);
+    Graph mstPrim = solverPrim->solveMST(graph);
     CHECK(mstPrim.compareGraphs(expectedMST));
 
-    temp = "KRUSKAL";
-
-    MST mstKruskal(graph,temp);
+    Graph mstKruskal = solverKruskal->solveMST(graph);
     CHECK(mstKruskal.compareGraphs(expectedMST));
 
-    temp = "BORUVKA";
-
-    MST mstBoruvka(graph, temp);
+    Graph mstBoruvka = solverBoruvka->solveMST(graph);
     CHECK(mstBoruvka.compareGraphs(expectedMST));
 
-    temp = "TARJAN";
-
-    MST mstTarjan(graph, temp);
+    Graph mstTarjan = solverTarjan->solveMST(graph);
     CHECK(mstTarjan.compareGraphs(expectedMST));
 
-    temp = "INTEGER_MST";
-
-    MST mstInteger(graph,temp);
+    Graph mstInteger = solverIntegerMST->solveMST(graph);
     CHECK(mstInteger.compareGraphs(expectedMST));
 }
 
 TEST_CASE("Test MST with an undirected graph of 6 vertices") {
     Graph graph(6);
-    graph.addEdge(0, 1, 6);
-    graph.addEdge(1, 3, 2);
-    graph.addEdge(3, 5, 8);
-    graph.addEdge(5, 4, 8);
-    graph.addEdge(4, 0, 9);
-    graph.addEdge(2, 0, 3);
-    graph.addEdge(2, 1, 4);
-    graph.addEdge(2, 3, 2);
-    graph.addEdge(2, 5, 9);
-    graph.addEdge(2, 4, 9);
+    graph.add_edge_on_Graph(0, 1, 6);
+    graph.add_edge_on_Graph(1, 3, 2);
+    graph.add_edge_on_Graph(3, 5, 8);
+    graph.add_edge_on_Graph(5, 4, 8);
+    graph.add_edge_on_Graph(4, 0, 9);
+    graph.add_edge_on_Graph(2, 0, 3);
+    graph.add_edge_on_Graph(2, 1, 4);
+    graph.add_edge_on_Graph(2, 3, 2);
+    graph.add_edge_on_Graph(2, 5, 9);
+    graph.add_edge_on_Graph(2, 4, 9);
 
     Graph expectedMST(6);
-    expectedMST.addEdge(3, 1, 2);
-    expectedMST.addEdge(3, 2, 2);
-    expectedMST.addEdge(3, 5, 8);
-    expectedMST.addEdge(5, 4, 8);
-    expectedMST.addEdge(2, 0, 3);
+    expectedMST.add_edge_on_Graph(3, 1, 2);
+    expectedMST.add_edge_on_Graph(3, 2, 2);
+    expectedMST.add_edge_on_Graph(3, 5, 8);
+    expectedMST.add_edge_on_Graph(5, 4, 8);
+    expectedMST.add_edge_on_Graph(2, 0, 3);
 
-    std::string temp = "PRIM";
-
-    // Test with each MST algorithm
-    MST mstPrim(graph, temp);
+    Graph mstPrim = solverPrim->solveMST(graph);
     CHECK(mstPrim.compareGraphs(expectedMST));
 
-    temp = "KRUSKAL";
-
-    MST mstKruskal(graph,temp);
+    Graph mstKruskal = solverKruskal->solveMST(graph);
     CHECK(mstKruskal.compareGraphs(expectedMST));
 
-    temp = "BORUVKA";
-
-    MST mstBoruvka(graph, temp);
+    Graph mstBoruvka = solverBoruvka->solveMST(graph);
     CHECK(mstBoruvka.compareGraphs(expectedMST));
 
-    temp = "TARJAN";
-
-    MST mstTarjan(graph, temp);
+    Graph mstTarjan = solverTarjan->solveMST(graph);
     CHECK(mstTarjan.compareGraphs(expectedMST));
 
-    temp = "INTEGER_MST";
-
-    MST mstInteger(graph,temp);
+    Graph mstInteger = solverIntegerMST->solveMST(graph);
     CHECK(mstInteger.compareGraphs(expectedMST));
 }
 
 TEST_CASE("Test MST with a disconnected graph of 6 vertices") {
     Graph disconnectedGraph(6);
-    disconnectedGraph.addEdge(0, 1, 6);
-    disconnectedGraph.addEdge(2, 3, 2);
-    disconnectedGraph.addEdge(4, 5, 8);
+    disconnectedGraph.add_edge_on_Graph(0, 1, 6);
+    disconnectedGraph.add_edge_on_Graph(2, 3, 2);
+    disconnectedGraph.add_edge_on_Graph(4, 5, 8);
 
     Graph expectedEmptyGraph(0);
 
-    std::string temp = "PRIM";
-
-    MST mstPrim(disconnectedGraph, temp);
+    Graph mstPrim = solverPrim->solveMST(disconnectedGraph);
     CHECK(mstPrim.compareGraphs(expectedEmptyGraph));
 
-    temp = "KRUSKAL";
-
-    MST mstKruskal(disconnectedGraph, temp);
+    Graph mstKruskal = solverKruskal->solveMST(disconnectedGraph);
     CHECK(mstKruskal.compareGraphs(expectedEmptyGraph));
 
-    temp = "BORUVKA";
-
-    MST mstBoruvka(disconnectedGraph, temp);
+    Graph mstBoruvka = solverBoruvka->solveMST(disconnectedGraph);
     CHECK(mstBoruvka.compareGraphs(expectedEmptyGraph));
 
-    temp = "TARJAN";
-
-    MST mstTarjan(disconnectedGraph, temp);
+    Graph mstTarjan = solverTarjan->solveMST(disconnectedGraph);
     CHECK(mstTarjan.compareGraphs(expectedEmptyGraph));
 
-    temp = "INTEGER_MST";
-
-    MST mstInteger(disconnectedGraph, temp);
+    Graph mstInteger = solverIntegerMST->solveMST(disconnectedGraph);
     CHECK(mstInteger.compareGraphs(expectedEmptyGraph));
 }
 
-// Test case for getTotalWeight in an MST
 TEST_CASE("MST: Total Weight Calculation") {
     // Create a simple graph
     Graph g(4);
-    g.addEdge(0, 1, 10);
-    g.addEdge(0, 2, 5);
-    g.addEdge(1, 2, 7);
-    g.addEdge(2, 3, 3);
+    g.add_edge_on_Graph(0, 1, 10);
+    g.add_edge_on_Graph(0, 2, 5);
+    g.add_edge_on_Graph(1, 2, 7);
+    g.add_edge_on_Graph(2, 3, 3);
 
-    std::string temp = "PRIM";
-
-    // Create an MST using Prim's algorithm
-    MST mstPrim(g, temp);
-
+    Graph mstPrim = solverPrim->solveMST(g);
     // Verify the total weight of the MST using Prim's algorithm
     CHECK(mstPrim.getTotalWeight() == 15);  // Edges selected: (0-2), (2-3), (1-2)
 
-    temp = "KRUSKAL";
-
-    // Create an MST using Kruskal's algorithm
-    MST mstKruskal(g, temp);
-
+    Graph mstKruskal = solverKruskal->solveMST(g);
     // Verify the total weight of the MST using Kruskal's algorithm
     CHECK(mstKruskal.getTotalWeight() == 15);  // Edges selected: (0-2), (2-3), (1-2)
+
+    Graph mstBoruvka = solverBoruvka->solveMST(g);
+    // Verify the total weight of the MST using Kruskal's algorithm
+    CHECK(mstBoruvka.getTotalWeight() == 15);  // Edges selected: (0-2), (2-3), (1-2)
+
+    Graph mstTarjan = solverTarjan->solveMST(g);
+    // Verify the total weight of the MST using Kruskal's algorithm
+    CHECK(mstTarjan.getTotalWeight() == 15);  // Edges selected: (0-2), (2-3), (1-2)
+
+    Graph mstInteger = solverIntegerMST->solveMST(g);
+    // Verify the total weight of the MST using Kruskal's algorithm
+    CHECK(mstInteger.getTotalWeight() == 15);  // Edges selected: (0-2), (2-3), (1-2)
+
 }
 
 TEST_CASE("BIG TESTS") {
-
 // --- Test graph with 3 vertices ---
 Graph graph3(3);
-graph3.addEdge(0, 1, 2);
-graph3.addEdge(1, 2, 3);
-graph3.addEdge(0, 2, 10);
+graph3.add_edge_on_Graph(0, 1, 2);
+graph3.add_edge_on_Graph(1, 2, 3);
+graph3.add_edge_on_Graph(0, 2, 10);
 
 Graph expectedMST3(3);
-expectedMST3.addEdge(0, 1, 2);
-expectedMST3.addEdge(1, 2, 3);
+expectedMST3.add_edge_on_Graph(0, 1, 2);
+expectedMST3.add_edge_on_Graph(1, 2, 3);
 
 std::cout << "\n//////////////////////////////////////////////////////////////////////////" << std::endl;
 std::cout << "//////////////////////////////////////////////////////////////////////////" << std::endl;
 std::cout << "--- Tests for graph3 ---" << std::endl;
 
-MST mstPrim3(graph3, "PRIM");
-MST mstKruskal3(graph3, "KRUSKAL");
-MST mstBoruvka3(graph3, "BORUVKA");
-MST mstTarjan3(graph3, "TARJAN");
-MST mstInteger3(graph3, "INTEGER_MST");
+
+    Graph mstPrim3 = solverPrim->solveMST(graph3);
+    Graph mstKruskal3 = solverKruskal->solveMST(graph3);
+    Graph mstBoruvka3 = solverBoruvka->solveMST(graph3);
+    Graph mstTarjan3 = solverTarjan->solveMST(graph3);
+    Graph mstInteger3 = solverIntegerMST->solveMST(graph3);
 
 if (mstPrim3.compareGraphs(expectedMST3)) std::cout << "PRIM: Success" << std::endl; else std::cout << "PRIM: Failure" << std::endl;
 if (mstKruskal3.compareGraphs(expectedMST3)) std::cout << "KRUSKAL: Success" << std::endl; else std::cout << "KRUSKAL: Failure" << std::endl;
@@ -347,37 +299,37 @@ std::cout << mstPrim3.displayGraph() << std::endl;
 
 // Property tests for graph3
 std::cout << "Expected total weight: 5, obtained: " << mstPrim3.getTotalWeight() << std::endl;
-std::cout << "Expected longest path: 0->1->2, obtained: " << mstPrim3.getTreeDepthPath() << std::endl;
-std::cout << "Expected heaviest edge: 1 2 3, obtained: " << mstPrim3.getMaxWeightEdge() << std::endl;
-std::cout << "Expected heaviest path: 0 --(2)--> 1 --(3)--> 2, obtained: " << mstPrim3.getMaxWeightPath() << std::endl;
-std::cout << "Expected average distance: 3.33333, obtained: " << mstPrim3.getAverageDistance() << std::endl;
-std::cout << "Expected lightest edge: 0 1 2, obtained: " << mstPrim3.getMinWeightEdge() << "\n" << std::endl;
+std::cout << "Expected longest path: 0->1->2, obtained: " << mstPrim3.getTreeDepthPath_MST() << std::endl;
+std::cout << "Expected heaviest edge: 1 2 3, obtained: " << mstPrim3.getMaxWeightEdge_MST() << std::endl;
+std::cout << "Expected heaviest path:  2 --(3)--> 1 --(2)--> 0, obtained: " << mstPrim3.getMaxWeightPath_MST() << std::endl;
+std::cout << "Expected average distance: 3.33333, obtained: " << mstPrim3.getAverageDistance_MST() << std::endl;
+std::cout << "Expected lightest edge: 0 1 2, obtained: " << mstPrim3.getMinWeightEdge_MST() << "\n" << std::endl;
 
 std::cout << "//////////////////////////////////////////////////////////////////////////" << std::endl;
 std::cout << "//////////////////////////////////////////////////////////////////////////" << std::endl;
 
 // --- Test graph with 5 vertices ---
 Graph graph5(5);
-graph5.addEdge(0, 1, 2);
-graph5.addEdge(1, 2, 3);
-graph5.addEdge(0, 3, 6);
-graph5.addEdge(1, 4, 5);
-graph5.addEdge(3, 1, 8);
-graph5.addEdge(4, 2, 7);
+graph5.add_edge_on_Graph(0, 1, 2);
+graph5.add_edge_on_Graph(1, 2, 3);
+graph5.add_edge_on_Graph(0, 3, 6);
+graph5.add_edge_on_Graph(1, 4, 5);
+graph5.add_edge_on_Graph(3, 1, 8);
+graph5.add_edge_on_Graph(4, 2, 7);
 
 Graph expectedMST5(5);
-expectedMST5.addEdge(0, 1, 2);
-expectedMST5.addEdge(1, 2, 3);
-expectedMST5.addEdge(0, 3, 6);
-expectedMST5.addEdge(1, 4, 5);
+expectedMST5.add_edge_on_Graph(0, 1, 2);
+expectedMST5.add_edge_on_Graph(1, 2, 3);
+expectedMST5.add_edge_on_Graph(0, 3, 6);
+expectedMST5.add_edge_on_Graph(1, 4, 5);
 
 std::cout << "--- Tests for graph5 ---" << std::endl;
 
-MST mstPrim5(graph5, "PRIM");
-MST mstKruskal5(graph5, "KRUSKAL");
-MST mstBoruvka5(graph5, "BORUVKA");
-MST mstTarjan5(graph5, "TARJAN");
-MST mstInteger5(graph5, "INTEGER_MST");
+    Graph mstPrim5 = solverPrim->solveMST(graph5);
+    Graph mstKruskal5 = solverKruskal->solveMST(graph5);
+    Graph mstBoruvka5 = solverBoruvka->solveMST(graph5);
+    Graph mstTarjan5 = solverTarjan->solveMST(graph5);
+    Graph mstInteger5 = solverIntegerMST->solveMST(graph5);
 
 if (mstPrim5.compareGraphs(expectedMST5)) std::cout << "PRIM: Success" << std::endl; else std::cout << "PRIM: Failure" << std::endl;
 if (mstKruskal5.compareGraphs(expectedMST5)) std::cout << "KRUSKAL: Success" << std::endl; else std::cout << "KRUSKAL: Failure" << std::endl;
@@ -389,42 +341,42 @@ std::cout << mstPrim5.displayGraph() << std::endl;
 
 // Property tests for graph5
 std::cout << "Expected total weight: 16, obtained: " << mstPrim5.getTotalWeight() << std::endl;
-std::cout << "Expected longest path: 0->1->2, obtained: " << mstPrim5.getTreeDepthPath() << std::endl;
-std::cout << "Expected heaviest edge: 0 3 6, obtained: " << mstPrim5.getMaxWeightEdge() << std::endl;
-std::cout << "Expected heaviest path: 4 --(5)--> 1 --(2)--> 0 --(6)--> 3, obtained: " << mstPrim5.getMaxWeightPath() << std::endl;
-std::cout << "Expected average distance: 6.8, obtained: " << mstPrim5.getAverageDistance() << std::endl;
-std::cout << "Expected lightest edge: 0 1 2, obtained: " << mstPrim5.getMinWeightEdge() << "\n" << std::endl;
+std::cout << "Expected longest path: 0->1->2, obtained: " << mstPrim5.getTreeDepthPath_MST() << std::endl;
+std::cout << "Expected heaviest edge: 0 3 6, obtained: " << mstPrim5.getMaxWeightEdge_MST() << std::endl;
+std::cout << "Expected heaviest path: 4 --(5)--> 1 --(2)--> 0 --(6)--> 3, obtained: " << mstPrim5.getMaxWeightPath_MST() << std::endl;
+std::cout << "Expected average distance: 6.8, obtained: " << mstPrim5.getAverageDistance_MST() << std::endl;
+std::cout << "Expected lightest edge: 0 1 2, obtained: " << mstPrim5.getMinWeightEdge_MST() << "\n" << std::endl;
 
 std::cout << "//////////////////////////////////////////////////////////////////////////" << std::endl;
 std::cout << "//////////////////////////////////////////////////////////////////////////" << std::endl;
 
 // --- Test graph with 6 vertices ---
 Graph graph6(6);
-graph6.addEdge(0, 1, 6);
-graph6.addEdge(1, 3, 2);
-graph6.addEdge(3, 5, 8);
-graph6.addEdge(5, 4, 8);
-graph6.addEdge(4, 0, 9);
-graph6.addEdge(2, 0, 3);
-graph6.addEdge(2, 1, 4);
-graph6.addEdge(2, 3, 2);
-graph6.addEdge(2, 5, 9);
-graph6.addEdge(2, 4, 9);
+graph6.add_edge_on_Graph(0, 1, 6);
+graph6.add_edge_on_Graph(1, 3, 2);
+graph6.add_edge_on_Graph(3, 5, 8);
+graph6.add_edge_on_Graph(5, 4, 8);
+graph6.add_edge_on_Graph(4, 0, 9);
+graph6.add_edge_on_Graph(2, 0, 3);
+graph6.add_edge_on_Graph(2, 1, 4);
+graph6.add_edge_on_Graph(2, 3, 2);
+graph6.add_edge_on_Graph(2, 5, 9);
+graph6.add_edge_on_Graph(2, 4, 9);
 
 Graph expectedMST6(6);
-expectedMST6.addEdge(3, 1, 2);
-expectedMST6.addEdge(3, 2, 2);
-expectedMST6.addEdge(3, 5, 8);
-expectedMST6.addEdge(5, 4, 8);
-expectedMST6.addEdge(2, 0, 3);
+expectedMST6.add_edge_on_Graph(3, 1, 2);
+expectedMST6.add_edge_on_Graph(3, 2, 2);
+expectedMST6.add_edge_on_Graph(3, 5, 8);
+expectedMST6.add_edge_on_Graph(5, 4, 8);
+expectedMST6.add_edge_on_Graph(2, 0, 3);
 
 std::cout << "--- Tests for graph6 ---" << std::endl;
 
-MST mstPrim6(graph6, "PRIM");
-MST mstKruskal6(graph6, "KRUSKAL");
-MST mstBoruvka6(graph6, "BORUVKA");
-MST mstTarjan6(graph6, "TARJAN");
-MST mstInteger6(graph6, "INTEGER_MST");
+    Graph mstPrim6 = solverPrim->solveMST(graph6);
+    Graph mstKruskal6 = solverKruskal->solveMST(graph6);
+    Graph mstBoruvka6 = solverBoruvka->solveMST(graph6);
+    Graph mstTarjan6 = solverTarjan->solveMST(graph6);
+    Graph mstInteger6 = solverIntegerMST->solveMST(graph6);
 
 if (mstPrim6.compareGraphs(expectedMST6)) std::cout << "PRIM: Success" << std::endl; else std::cout << "PRIM: Failure" << std::endl;
 if (mstKruskal6.compareGraphs(expectedMST6)) std::cout << "KRUSKAL: Success" << std::endl; else std::cout << "KRUSKAL: Failure" << std::endl;
@@ -436,102 +388,13 @@ std::cout << mstPrim6.displayGraph() << std::endl;
 
 // Property tests for graph6
 std::cout << "Expected total weight: 23, obtained: " << mstPrim6.getTotalWeight() << std::endl;
-std::cout << "Expected longest path: 0->2->3->5->4, obtained: " << mstPrim6.getTreeDepthPath() << std::endl;
-std::cout << "Expected heaviest edge: 3 5 8, obtained: " << mstPrim6.getMaxWeightEdge() << std::endl;
-std::cout << "Expected heaviest path: 4 --(8)--> 5 --(8)--> 3 --(2)--> 2 --(3)--> 0, obtained: " << mstPrim6.getMaxWeightPath() << std::endl;
-std::cout << "Expected average distance: 9.66667, obtained: " << mstPrim6.getAverageDistance() << std::endl;
-std::cout << "Expected lightest edge: 1 3 2, obtained: " << mstPrim6.getMinWeightEdge() << "\n" << std::endl;
+std::cout << "Expected longest path: 0->2->3->5->4, obtained: " << mstPrim6.getTreeDepthPath_MST() << std::endl;
+std::cout << "Expected heaviest edge: 3 5 8, obtained: " << mstPrim6.getMaxWeightEdge_MST() << std::endl;
+std::cout << "Expected heaviest path: 4 --(8)--> 5 --(8)--> 3 --(2)--> 2 --(3)--> 0, obtained: " << mstPrim6.getMaxWeightPath_MST() << std::endl;
+std::cout << "Expected average distance: 9.66667, obtained: " << mstPrim6.getAverageDistance_MST() << std::endl;
+std::cout << "Expected lightest edge: 1 3 2, obtained: " << mstPrim6.getMinWeightEdge_MST() << "\n" << std::endl;
 
 std::cout << "//////////////////////////////////////////////////////////////////////////" << std::endl;
 std::cout << "//////////////////////////////////////////////////////////////////////////" << std::endl;
-
-{
-    // Test with graph expectedMST3
-    std::cout << "\nTest on graph expectedMST3:" << std::endl;
-    Graph expectedMST3(3);
-    expectedMST3.addEdge(0, 1, 2);
-    expectedMST3.addEdge(1, 2, 3);
-
-    MST mst3(expectedMST3, "KRUSKAL"); // Create MST using Kruskal's algorithm
-
-    std::cout << mst3.displayGraph() << std::endl;
-
-    // Attempt to add an edge that should succeed
-    std::cout << "Adding edge (0, 2, 1) to MST3: "
-              << (mst3.add(0, 2, 1) ? "Succeeded" : "Failed") << std::endl;
-    std::cout << mst3.displayGraph() << std::endl;
-
-    // Attempt to add an edge that should fail
-    std::cout << "Adding edge (0, 2, 4) to MST3: "
-              << (mst3.add(0, 2, 4) ? "Succeeded" : "Failed") << std::endl;
-    std::cout << mst3.displayGraph() << std::endl;
-
-    // Attempt to remove an edge that should succeed
-    std::cout << "Removing edge (0, 1) from MST3: "
-              << (mst3.remove(0, 1) ? "Succeeded" : "Failed") << std::endl;
-    std::cout << mst3.displayGraph() << std::endl;
-
-    // Attempt to remove an edge that should fail
-    std::cout << "Removing edge (1, 2) from MST3: "
-              << (mst3.remove(1, 2) ? "Succeeded" : "Failed") << std::endl;
-    std::cout << mst3.displayGraph() << std::endl;
-
-    std::cout << std::endl;
-
-    // Test with graph expectedMST5
-    std::cout << "Test on graph expectedMST5:" << std::endl;
-    Graph expectedMST5(5);
-    expectedMST5.addEdge(0, 1, 2);
-    expectedMST5.addEdge(1, 2, 3);
-    expectedMST5.addEdge(0, 3, 6);
-    expectedMST5.addEdge(1, 4, 5);
-
-    MST mst5(expectedMST5, "PRIM"); // Create MST using Prim's algorithm
-
-    std::cout << "Adding edge (3, 4, 4) to MST5: "
-              << (mst5.add(3, 4, 4) ? "Succeeded" : "Failed") << std::endl;
-    std::cout << mst5.displayGraph() << std::endl;
-
-    std::cout << "Adding edge (2, 3, 7) to MST5: "
-              << (mst5.add(2, 3, 7) ? "Succeeded" : "Failed") << std::endl;
-    std::cout << mst5.displayGraph() << std::endl;
-
-    std::cout << "Removing edge (1, 2) from MST5: "
-              << (mst5.remove(1, 2) ? "Succeeded" : "Failed") << std::endl;
-    std::cout << mst5.displayGraph() << std::endl;
-
-    std::cout << "Removing edge (0, 3) from MST5: "
-              << (mst5.remove(0, 3) ? "Succeeded" : "Failed") << std::endl;
-    std::cout << mst5.displayGraph() << std::endl;
-
-    std::cout << std::endl;
-
-    // Test with graph expectedMST6
-    std::cout << "Test on graph expectedMST6:" << std::endl;
-    Graph expectedMST6(6);
-    expectedMST6.addEdge(3, 1, 2);
-    expectedMST6.addEdge(3, 2, 2);
-    expectedMST6.addEdge(3, 5, 8);
-    expectedMST6.addEdge(5, 4, 8);
-    expectedMST6.addEdge(2, 0, 3);
-
-    MST mst6(expectedMST6, "BORUVKA"); // Create MST using Boruvka's algorithm
-
-    std::cout << "Adding edge (1, 4, 6) to MST6: "
-              << (mst6.add(1, 4, 6) ? "Succeeded" : "Failed") << std::endl;
-    std::cout << mst6.displayGraph() << std::endl;
-
-    std::cout << "Adding edge (2, 5, 10) to MST6: "
-              << (mst6.add(2, 5, 10) ? "Succeeded" : "Failed") << std::endl;
-    std::cout << mst6.displayGraph() << std::endl;
-
-    std::cout << "Removing edge (3, 2) from MST6: "
-              << (mst6.remove(3, 2) ? "Succeeded" : "Failed") << std::endl;
-    std::cout << mst6.displayGraph() << std::endl;
-
-    std::cout << "Removing edge (5, 4) from MST6: "
-              << (mst6.remove(5, 4) ? "Succeeded" : "Failed") << std::endl;
-    std::cout << mst6.displayGraph() << std::endl;
-}
 
 }

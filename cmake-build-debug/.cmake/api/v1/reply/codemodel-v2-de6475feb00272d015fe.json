@@ -1,0 +1,78 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "OS_FinalProject",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "OS_FinalProject::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-OS_FinalProject-Debug-323c9dd42eced48a81cb.json",
+					"name" : "OS_FinalProject",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "OS_FinalProject_Tests::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-OS_FinalProject_Tests-Debug-aef8f44c5e974b65cdcf.json",
+					"name" : "OS_FinalProject_Tests",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "clean-all::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-clean-all-Debug-e919cba9b80d7a4bbf77.json",
+					"name" : "clean-all",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug",
+		"source" : "/home/ubuntu/CLionProjects/OS_FinalProject"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 7
+	}
+}
