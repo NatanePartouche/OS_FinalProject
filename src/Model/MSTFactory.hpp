@@ -72,26 +72,10 @@ public:
 // Union-Find with path compression and union by rank
 class UnionFind {
 public:
-    UnionFind(int n) : parent(n), rank(n, 0) {for (int i = 0; i < n; ++i) parent[i] = i;}
-
-    ~UnionFind() = default;
-
-    int find(int u) {
-        if (u != parent[u]) parent[u] = find(parent[u]);
-        return parent[u];
-    }
-
-    bool unionSets(int u, int v) {
-        int rootU = find(u);
-        int rootV = find(v);
-        if (rootU != rootV) {
-            if (rank[rootU] > rank[rootV]) {parent[rootV] = rootU;}
-            else if (rank[rootU] < rank[rootV]) {parent[rootU] = rootV;}
-            else {parent[rootV] = rootU;++rank[rootU];}
-            return true;
-        }
-        return false;
-    }
+    UnionFind(int n);
+    ~UnionFind();
+    int find(int u);
+    bool unionSets(int u, int v);
 
 private:
     std::vector<int> parent;

@@ -1,5 +1,4 @@
 #include "ActiveObject.hpp"
-#include <iostream>
 
 // Constructor: Initializes the ActiveObject and launches the specified number of worker threads.
 ActiveObject::ActiveObject(int numThreads) : running(true), cancelingTasks(false) {

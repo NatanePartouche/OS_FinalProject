@@ -6,6 +6,19 @@ Explication des commandes :
 
 
 
+My program operates with client connections to a server I have created, 
+leveraging socket-based communication to enable interaction between the client and server.
+How does a socket work?
+
+	1.	Socket Creation: A program creates a socket, which acts as an endpoint for listening for incoming connections or initiating an outgoing one.
+	2.	Connection: A client program uses its socket to connect to a server, which is actively listening on a specific port on a machine. 
+        This connection forms a communication pathway between the client and server.
+	3.	Data Exchange: Once the connection is established, the programs can exchange data back and forth through their sockets. 
+        The data flows between them, enabling real-time communication or data transfer.
+	4.	Closure: After the data exchange is complete, each side closes its socket, which frees up resources and ends the communication.
+
+Sockets are commonly used in client-server applications. In such setups, one program (the server) listens for connections on a network port, 
+while another program (the client) connects to that server to send or receive data.
 
 
 
@@ -15,34 +28,38 @@ Explication des commandes :
 
 
 
-Dans cette implémentation, le modèle Pipeline est composé de plusieurs Active Objects (AO) qui permettent le traitement séquentiel et parallèle des tâches, tout en optimisant les performances et l’utilisation de la mémoire cache.
+1. Threads Pool :
+   •	Il y a 4 threads dans le pool de threads qui surveillent la file clientQueue pour traiter les connexions clients.
+   •	Ces threads ne traitent pas directement les requêtes des clients.
+   Leurs rôles est principalement de :
+	- Surveiller la file d’attente pour savoir si de nouveaux clients ont été acceptés par le serveur.
+    - Extraire le socket client de la file d’attente.
+    - Déléguer le traitement de la requête client à l’ActiveObject.
 
-Gestion du Pipeline
-Le Pipeline est conçu pour enchaîner les opérations de traitement de manière fluide et sans interruption. 
-Chaque AO représente une étape du pipeline, et les tâches sont soumises à la première étape via la méthode submitTask. 
-Une fois que la tâche est traitée par le premier AO, elle est automatiquement transmise au suivant dans la chaîne, jusqu’à la fin du pipeline. Ainsi, le pipeline fonctionne comme une chaîne de production où chaque étape dépend de la précédente et alimente la suivante.
+2. ActiveObject :
+   •	Il y a un seul ActiveObject global qui est utilisé pour gérer et exécuter les tâches de manière asynchrone.
+   •	L’ActiveObject prend en charge le traitement des requêtes des clients. 
+        Chaque tâche qui est envoyée à l’ActiveObject représente une opération de traitement pour un client connecté (par exemple, la fonction handleClient(clientSocket)).
+   •	Les threads du pool ajoutent des tâches à l’ActiveObject via activeObject.enqueueTask(...), puis se libèrent pour surveiller à nouveau la file clientQueue.
 
-Fonctionnement de l’Active Object (AO)
-Un Active Object est un objet indépendant qui fonctionne dans son propre thread et reste actif tout au long de l’exécution du programme. 
-Chaque AO possède une file d’attente de tâches et un mécanisme de synchronisation qui lui permet de recevoir des tâches à exécuter sans être recréé. 
-Lorsqu’une tâche est soumise à l’AO (via submit), celle-ci est ajoutée à la file d’attente et exécutée dès que possible par le thread associé.
-L’AO fonctionne de manière asynchrone : il surveille en permanence sa file d’attente et exécute les tâches dès qu’elles arrivent. 
-Ce modèle permet d’économiser les ressources, car les AO sont créés une seule fois et restent actifs en permanence. 
-Lorsqu’une tâche est terminée, l’AO prend automatiquement la suivante, assurant ainsi un flux continu sans coût de création et destruction d’objets.
+Fonctionnement général :
+	•	Acceptation des connexions : Le thread principal du serveur utilise la fonction accept() pour recevoir les connexions entrantes et les ajoute à la file clientQueue.
+	•	Distribution des connexions : Les threads du pool surveillent clientQueue, prennent les connexions et les passent à l’ActiveObject pour traitement.
+	•	Traitement des requêtes : L’ActiveObject traite chaque requête de manière asynchrone, libérant ainsi les threads du pool pour gérer d’autres connexions.
+Schéma de fonctionnement :
+	1.	Le thread principal accepte les nouvelles connexions et les ajoute à clientQueue.
+	2.	Les threads du pool prennent les connexions de clientQueue et les ajoutent à l’ActiveObject.
+	3.	L’ActiveObject exécute les tâches de traitement des clients.
 
-Avantages de cette architecture
-Cette organisation en Pipeline composé d’Active Objects apporte plusieurs bénéfices :
 
-	•	Traitement parallèle : chaque AO exécute des tâches indépendamment, ce qui permet de traiter plusieurs tâches en parallèle.
-	•	Optimisation du cache : chaque AO garde les instructions en mémoire locale, réduisant les accès coûteux à la mémoire principale.
-	•	Économie de ressources : les AO ne sont pas recréés après chaque tâche, limitant les coûts liés à l’allocation et libération de mémoire.
 
-En résumé, cette gestion de Pipeline par Active Objects permet un traitement efficace et performant, adapté aux applications nécessitant des calculs ou traitements complexes répartis en plusieurs étapes.
+
+
+
 
 
 
 ┌─────────────────/ OS_FinalProject /────────────────────┐
-│                                                        │
 ├── src/                                                 │
 │   ├── Model/                                           │
 │   │   ├── Graph.cpp                                    │
@@ -64,8 +81,7 @@ En résumé, cette gestion de Pipeline par Active Objects permet un traitement e
 │   │   ├── Pipeline.hpp                                 │
 │   │   ├── Server.cpp                                   │
 │   │   └── Server.hpp                                   │
-│   │                                                    │
-│   └── main.cpp                                         │
+│   └─ main.cpp                                          │
 │                                                        │
 ├── cmake-build-debug/                                   │
 ├── CMakeLists.txt                                       │

@@ -6,8 +6,6 @@
 #include <condition_variable>
 #include <mutex>
 #include <set>
-#include <tuple>
-#include <vector>
 
 #define PORT 8080            // The port number the server listens on
 #define BUFFER_SIZE 1024     // Size of the buffer used to read data from clients
@@ -27,9 +25,6 @@ public:
 
     // Function to handle a single client connection
     void handleClient(int clientSocket);
-
-    // Function to request graph parameters from client
-    std::tuple<int, int, std::vector<std::tuple<int, int, int>>, std::string> requestGraphParametersFromClient(int newSocket);
 
 private:
     // Thread synchronization variables
