@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "bin/OS_FinalProject"
+			"path" : "OS_FinalProject"
 		}
 	],
 	"backtrace" : 1,
@@ -25,13 +25,13 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 39,
+				"line" : 32,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 12,
+				"line" : 13,
 				"parent" : 0
 			}
 		]
@@ -57,7 +57,7 @@
 				},
 				{
 					"backtrace" : 2,
-					"path" : "/home/ubuntu/CLionProjects/OS_FinalProject/src/Model_Tests"
+					"path" : "/home/ubuntu/CLionProjects/OS_FinalProject/src/Model_Test"
 				}
 			],
 			"language" : "CXX",
@@ -125,12 +125,20 @@
 				7,
 				8,
 				9,
-				10
+				10,
+				11,
+				12
 			]
 		}
 	],
 	"sources" : 
 	[
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/main.cpp",
+			"sourceGroupIndex" : 0
+		},
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
@@ -146,7 +154,7 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "src/Network/Pipeline.cpp",
+			"path" : "src/Model_Test/MST_Tests.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
@@ -158,13 +166,7 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "src/Network/Server.cpp",
-			"sourceGroupIndex" : 0
-		},
-		{
-			"backtrace" : 1,
-			"compileGroupIndex" : 0,
-			"path" : "src/main.cpp",
+			"path" : "src/Network/LeaderFollowers.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
@@ -179,17 +181,27 @@
 		},
 		{
 			"backtrace" : 1,
-			"path" : "src/Network/Pipeline.hpp",
-			"sourceGroupIndex" : 1
-		},
-		{
-			"backtrace" : 1,
 			"path" : "src/Network/ActiveObject.hpp",
 			"sourceGroupIndex" : 1
 		},
 		{
 			"backtrace" : 1,
+			"path" : "src/Network/LeaderFollowers.hpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
 			"path" : "src/Network/Server.hpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "src/Network/Server_LF.hpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "src/Network/Server_PL.hpp",
 			"sourceGroupIndex" : 1
 		}
 	],

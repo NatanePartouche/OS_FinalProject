@@ -1,7 +1,8 @@
 #ifndef MSTFACTORY_HPP
 #define MSTFACTORY_HPP
 
-#include "Graph.hpp"
+class Graph;
+#include <vector>
 
 
 class MSTFactory {

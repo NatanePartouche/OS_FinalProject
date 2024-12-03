@@ -1,33 +1,72 @@
 #include "Graph.hpp"
+#include "MSTFactory.hpp"
 #include <algorithm>
 #include <iostream>
 #include <limits>
 #include <vector>
 #include <functional>
 #include <sstream>
+#include <memory>
 
 // Constructor to initialize a graph with a specified number of vertices.
-Graph::Graph(int vertices) {
-    adjList.resize(vertices);
-}
-Graph::~Graph() {
-    // Libération des ressources (optionnel dans ce cas)
-    for (auto& edges : adjList) {
-        edges.clear();
+Graph::Graph(int vertices) : adjList(vertices) {}
+
+// Copy constructor
+Graph::Graph(const Graph& other)
+    : adjList(other.adjList), _algorithmChoice(other._algorithmChoice) {
+    if (other.mst) {
+        mst = std::make_unique<Graph>(*other.mst);
     }
-    adjList.clear();
+}
+
+// Copy assignment operator
+Graph& Graph::operator=(const Graph& other) {
+    if (this != &other) {
+        adjList = other.adjList;
+        _algorithmChoice = other._algorithmChoice;
+        mst = other.mst ? std::make_unique<Graph>(*other.mst) : nullptr;
+    }
+    return *this;
+}
+
+// Move assignment operator
+Graph& Graph::operator=(Graph&& other) noexcept {
+    if (this != &other) {
+        adjList = std::move(other.adjList);
+        _algorithmChoice = std::move(other._algorithmChoice);
+        mst = std::move(other.mst);
+    }
+    return *this;
 }
 
 // Adds an undirected edge between vertices `u` and `v` with a specified weight.
-void Graph::add_edge_on_Graph(int u, int v, int weight) {
+// If an edge already exists, it updates the weight.
+void Graph::add_edge(int u, int v, int weight) {
     if (isValidVertex(u) && isValidVertex(v)) {
+        // Remove the existing edge from u to v, if it exists
+        for (auto it = adjList[u].begin(); it != adjList[u].end(); ++it) {
+            if (it->first == v) {
+                adjList[u].erase(it);
+                break;
+            }
+        }
+
+        // Remove the existing edge from v to u, if it exists
+        for (auto it = adjList[v].begin(); it != adjList[v].end(); ++it) {
+            if (it->first == u) {
+                adjList[v].erase(it);
+                break;
+            }
+        }
+
+        // Add the new edge with the updated weight
         adjList[u].push_back({v, weight});
         adjList[v].push_back({u, weight});
     }
 }
 
 // Removes an undirected edge between vertices `u` and `v`.
-void Graph::remove_edge_on_Graph(int u, int v) {
+void Graph::remove_edge(int u, int v) {
     if (isValidVertex(u) && isValidVertex(v)) {
         auto& neighborsU = adjList[u];
         for (auto it = neighborsU.begin(); it != neighborsU.end(); ++it) {
@@ -45,62 +84,6 @@ void Graph::remove_edge_on_Graph(int u, int v) {
             }
         }
     }
-}
-
-// Changes the weight of an existing undirected edge between vertices `u` and `v` to `newWeight`.
-void Graph::changeEdgeWeight(int u, int v, int newWeight) {
-    if (isValidVertex(u) && isValidVertex(v)) {
-        for (auto& neighbor : adjList[u]) {
-            if (neighbor.first == v) {
-                neighbor.second = newWeight;
-            }
-        }
-        for (auto& neighbor : adjList[v]) {
-            if (neighbor.first == u) {
-                neighbor.second = newWeight;
-            }
-        }
-    }
-}
-
-// Provides a textual representation of the graph, showing all vertices and edges with weights.
-std::string Graph::displayGraph() {
-    std::string graphRepresentation;
-    graphRepresentation += "---------------Graph Representation--------------------\n";
-    graphRepresentation += "Vertices in the graph: ";
-    for (int i = 0; i < getNumVertices(); ++i) {
-        graphRepresentation += std::to_string(i) + " ";
-    }
-    graphRepresentation += "\nConnections between vertices (undirected edges):\n";
-    for (int i = 0; i < getNumVertices(); ++i) {
-        for (const auto& neighbor : adjList[i]) {
-            if (i < neighbor.first) {
-                graphRepresentation += "Vertex " + std::to_string(i) + " <----(" + std::to_string(neighbor.second) + ")----> Vertex " + std::to_string(neighbor.first) + "\n";
-            }
-        }
-    }
-    graphRepresentation += "-------------------------------------------------------\n";
-    return graphRepresentation;
-}
-
-// Provides a textual representation of MST
-std::string Graph::displayMST() {
-    std::string graphRepresentation;
-    graphRepresentation += "---------------MST Representation----------------------\n";
-    graphRepresentation += "Vertices in the graph: ";
-    for (int i = 0; i < getNumVertices(); ++i) {
-        graphRepresentation += std::to_string(i) + " ";
-    }
-    graphRepresentation += "\nConnections between vertices (undirected edges):\n";
-    for (int i = 0; i < getNumVertices(); ++i) {
-        for (const auto& neighbor : adjList[i]) {
-            if (i < neighbor.first) {
-                graphRepresentation += "Vertex " + std::to_string(i) + " <----(" + std::to_string(neighbor.second) + ")----> Vertex " + std::to_string(neighbor.first) + "\n";
-            }
-        }
-    }
-    graphRepresentation += "-------------------------------------------------------\n";
-    return graphRepresentation;
 }
 
 // Returns the total number of vertices in the graph.
@@ -143,17 +126,69 @@ bool Graph::compareGraphs(Graph& other) {
     return true;
 }
 
-// Assignment operator
-Graph& Graph::operator=(const Graph& other) {
-    if (this != &other) {
-        adjList = other.adjList;
+// Changes the weight of an existing undirected edge between vertices `u` and `v` to `newWeight`.
+void Graph::changeEdgeWeight(int u, int v, int newWeight) {
+    if (isValidVertex(u) && isValidVertex(v)) {
+        for (auto& neighbor : adjList[u]) {
+            if (neighbor.first == v) {
+                neighbor.second = newWeight;
+            }
+        }
+        for (auto& neighbor : adjList[v]) {
+            if (neighbor.first == u) {
+                neighbor.second = newWeight;
+            }
+        }
     }
-    return *this;
+}
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Provides a textual representation of the graph, showing all vertices and edges with weights.
+std::string Graph::displayGraph() {
+    std::string graphRepresentation;
+    graphRepresentation +="\n" + std::string(15, ' ') + "---------------Graph Representation--------------------\n";
+    graphRepresentation += std::string(15, ' ') + "Vertices in the graph: ";
+    for (int i = 0; i < getNumVertices(); ++i) {
+        graphRepresentation += std::to_string(i) + " ";
+    }
+    graphRepresentation += "\n" + std::string(15, ' ') + "Connections between vertices (undirected edges):\n";
+    for (int i = 0; i < getNumVertices(); ++i) {
+        for (const auto& neighbor : adjList[i]) {
+            if (i < neighbor.first) {
+                graphRepresentation += std::string(15, ' ') + "Vertex " + std::to_string(i) + " <----(" + std::to_string(neighbor.second) + ")----> Vertex " + std::to_string(neighbor.first) + "\n";
+            }
+        }
+    }
+    return graphRepresentation;
+}
+
+// Provides a textual representation of MST
+std::string Graph::displayMST() {
+    std::string graphRepresentation;
+    graphRepresentation += std::string(15, ' ') + "---------------MST Representation----------------------\n";
+    graphRepresentation += std::string(15, ' ') + "Vertices in the graph: ";
+    for (int i = 0; i < this->mst->getNumVertices(); ++i) {
+        graphRepresentation += std::to_string(i) + " ";
+    }
+    graphRepresentation += "\n" + std::string(15, ' ') + "Connections between vertices (undirected edges):\n";
+    for (int i = 0; i < this->mst->getNumVertices(); ++i) {
+        for (const auto& neighbor : this->mst->adjList[i]) {
+            if (i < neighbor.first) {
+                graphRepresentation += std::string(15, ' ') + "Vertex " + std::to_string(i) + " <----(" + std::to_string(neighbor.second) + ")----> Vertex " + std::to_string(neighbor.first) + "\n";
+            }
+        }
+    }
+    return graphRepresentation;
 }
 
 // Returns the total weight of all edges in the graph.
-int Graph::getTotalWeight() {
-    int totalWeight = 0;
+double Graph::getTotalWeight() {
+    double totalWeight = 0;
     for (int u = 0; u < getNumVertices(); ++u) {
         for (const auto& neighbor : adjList[u]) {
             totalWeight += neighbor.second;  // Add the edge weight.
@@ -162,9 +197,20 @@ int Graph::getTotalWeight() {
     return totalWeight / 2;
 }
 
+// Returns the total weight of all edges in the graph.
+double Graph::getTotalWeight_MST() {
+    double totalWeight = 0;
+    for (int u = 0; u < this->mst->getNumVertices(); ++u) {
+        for (const auto& neighbor : this->mst->adjList[u]) {
+            totalWeight += neighbor.second;  // Add the edge weight.
+        }
+    }
+    return totalWeight / 2;
+}
+
 // Finds the longest path in the MST and returns it as a formatted string.
 std::string Graph::getTreeDepthPath_MST() {
-    int n = getNumVertices();
+    int n = this->mst->getNumVertices();
     if (n == 0) return "";
 
     std::vector<int> path;
@@ -178,7 +224,7 @@ std::string Graph::getTreeDepthPath_MST() {
 
         std::function<void(int)> dfs = [&](int node) {
             visited[node] = true;
-            for (const auto& neighbor : adjList[node]) {
+            for (const auto& neighbor : this->mst->adjList[node]) {
                 int v = neighbor.first;
                 if (!visited[v]) {
                     parents[v] = node;
@@ -215,8 +261,8 @@ std::string Graph::getTreeDepthPath_MST() {
 std::string Graph::getMaxWeightEdge_MST() {
     int maxWeightEdge = 0;
     int u = -1, v = -1;
-    for (int i = 0; i < getNumVertices(); ++i) {
-        for (const auto& edge : adjList[i]) {
+    for (int i = 0; i < this->mst->getNumVertices(); ++i) {
+        for (const auto& edge : this->mst->adjList[i]) {
             if (edge.second > maxWeightEdge) {
                 maxWeightEdge = edge.second;
                 u = i;
@@ -231,7 +277,8 @@ std::string Graph::getMaxWeightEdge_MST() {
 
 // Finds the heaviest path in the MST and returns it as a formatted string.
 std::string Graph::getMaxWeightPath_MST() {
-    int n = getNumVertices();
+
+    int n = this->mst->getNumVertices();
     if (n == 0) return "Empty graph";
 
     std::vector<int> parents(n, -1);
@@ -244,7 +291,7 @@ std::string Graph::getMaxWeightPath_MST() {
 
         std::function<void(int)> dfs = [&](int node) {
             visited[node] = true;
-            for (const auto& neighbor : adjList[node]) {
+            for (const auto& neighbor : this->mst->adjList[node]) {
                 int v = neighbor.first;
                 int weight = neighbor.second;
                 if (!visited[v]) {
@@ -274,9 +321,9 @@ std::string Graph::getMaxWeightPath_MST() {
     for (int v = end; v != -1; v = parents[v]) {
         if (parents[v] != -1) {
             int u = parents[v];
-            auto it = std::find_if(adjList[u].begin(), adjList[u].end(),
+            auto it = std::find_if(this->mst->adjList[u].begin(), this->mst->adjList[u].end(),
                                    [v](const std::pair<int, int>& edge) { return edge.first == v; });
-            if (it != adjList[u].end()) {
+            if (it != this->mst->adjList[u].end()) {
                 maxPath.push_back({u, it->second});
             }
         }
@@ -296,11 +343,11 @@ std::string Graph::getMaxWeightPath_MST() {
 
 // Calculates the average distance between all vertex pairs in the MST.
 double Graph::getAverageDistance_MST() {
-    int n = getNumVertices();
+    int n = this->mst->getNumVertices();
     std::vector<std::vector<int>> dist(n, std::vector<int>(n, std::numeric_limits<int>::max()));
     for (int i = 0; i < n; ++i) {
         dist[i][i] = 0;
-        for (const auto& neighbor : adjList[i]) {
+        for (const auto& neighbor : this->mst->adjList[i]) {
             int v = neighbor.first;
             int weight = neighbor.second;
             dist[i][v] = weight;
@@ -330,8 +377,8 @@ double Graph::getAverageDistance_MST() {
 std::string Graph::getMinWeightEdge_MST() {
     int minWeightEdge = std::numeric_limits<int>::max();
     int u = -1, v = -1;
-    for (int i = 0; i < getNumVertices(); ++i) {
-        for (const auto& edge : adjList[i]) {
+    for (int i = 0; i < this->mst->getNumVertices(); ++i) {
+        for (const auto& edge : this->mst->adjList[i]) {
             if (edge.second < minWeightEdge) {
                 minWeightEdge = edge.second;
                 u = i;
@@ -344,44 +391,29 @@ std::string Graph::getMinWeightEdge_MST() {
     return oss.str();
 }
 
-// Function to find the path between two vertices in an MST without calling a helper function
-std::string Graph::findPath_MST(int u, int v) {
-    std::vector<bool> visited(this->getNumVertices(), false); // Track visited vertices
-    std::vector<int> path; // Store the path
+std::string Graph::Analysis() {
+    std::string _Analysis = "";
+    _Analysis +="\n"+displayGraph() + displayMST();
+    _Analysis += std::string(15, ' ') + "------------------MST Analysis-------------------------\n";
+    _Analysis += std::string(15, ' ') + "Algorithm: " + _algorithmChoice + "\n";
+    _Analysis += std::string(15, ' ') + "Total MST weight: " + std::to_string(getTotalWeight_MST()) + "\n";
+    _Analysis += std::string(15, ' ') + "Average distance: " + std::to_string(getAverageDistance_MST()) + "\n";
+    _Analysis += std::string(15, ' ') + "Longest path: " + getTreeDepthPath_MST() + "\n";
+    _Analysis += std::string(15, ' ') + "Heaviest path: " + getMaxWeightPath_MST() + "\n";
+    _Analysis += std::string(15, ' ') + "Heaviest edge: " + getMaxWeightEdge_MST() + "\n";
+    _Analysis += std::string(15, ' ') + "Lightest edge: " + getMinWeightEdge_MST() + "\n";
+    _Analysis += std::string(15, ' ') + "-------------------------------------------------------\n\n";
+    return _Analysis;
+}
 
-    // Direct DFS logic to find the path
-    path.push_back(u);
-    visited[u] = true;
-
-    while (!path.empty()) {
-        int current = path.back();
-
-        if (current == v) {
-            // Path found, build the path string
-            std::ostringstream oss;
-            for (size_t i = 0; i < path.size(); ++i) {
-                oss << path[i];
-                if (i < path.size() - 1) oss << "->";
-            }
-            return oss.str();
-        }
-
-        bool foundUnvisitedNeighbor = false;
-        for (const auto& neighbor : adjList[current]) {
-            int nextVertex = neighbor.first;
-            if (!visited[nextVertex]) {
-                visited[nextVertex] = true;
-                path.push_back(nextVertex);
-                foundUnvisitedNeighbor = true;
-                break;
-            }
-        }
-        // Backtrack if no unvisited neighbors
-        if (!foundUnvisitedNeighbor) {
-            path.pop_back();
-        }
-    }
-
-    // If no path was found
-    return "No path found between vertices " + std::to_string(u) + " and " + std::to_string(v);
+void Graph::Solve() {
+    if (this->getNumVertices() == 0) {return ;}
+    std::unique_ptr<MSTFactory> algo;
+    if (_algorithmChoice == "prim") algo = std::make_unique<PrimSolver>();
+    else if (_algorithmChoice == "kruskal") algo = std::make_unique<KruskalSolver>();
+    else if (_algorithmChoice == "boruvka") algo = std::make_unique<BoruvkaSolver>();
+    else if (_algorithmChoice == "tarjan") algo = std::make_unique<TarjanSolver>();
+    else if (_algorithmChoice == "integer_mst") algo = std::make_unique<IntegerMSTSolver>();
+    if (!algo) {return;}
+        this->mst = std::make_unique<Graph>(algo->solveMST(*this));
 }

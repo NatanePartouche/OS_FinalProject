@@ -1,43 +1,112 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include <atomic>
-#include <queue>
-#include <condition_variable>
+#include <string>
+#include <unordered_set>
+#include <iostream>
+#include <stdexcept>
 #include <mutex>
-#include <set>
-
-#define PORT 8080            // The port number the server listens on
-#define BUFFER_SIZE 1024     // Size of the buffer used to read data from clients
-#define THREAD_POOL_SIZE 4   // Number of threads in the server's thread pool
+#include <atomic>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
 
 class Server {
+protected:
+    int port;                                      // Port d'écoute
+    std::string address;                           // Adresse IP ou nom d'hôte
+    std::unordered_set<int> connectedClients;      // Ensemble des clients connectés
+    int server_fd;                                 // Descripteur de socket serveur
+    std::mutex log_mutex;                          // Mutex pour les logs
+    std::atomic<bool> running;                     // Indique si le serveur est actif
+
 public:
-    // Constructor and Destructor
-    Server();
-    ~Server();
+    Server(const std::string& addr, int p)
+        : port(p), address(addr), server_fd(-1), running(false) {
+        if (port <= 0 || port > 65535) {
+            throw std::invalid_argument("[Server] Invalid port. Must be between 1 and 65535.");
+        }
+        if (address.empty()) {
+            throw std::invalid_argument("[Server] Invalid address. Cannot be empty.");
+        }
+    }
 
-    // Main server function using the Leader-Follower pattern
-    void runServer();
+    ~Server() {stop();}
 
-    // Function to close all active client connections
-    void closeAllClients();
+    // Méthodes abstraites pour l'extension
+    virtual void start() = 0;
+    virtual void stop() {
+        if (!running.exchange(false)) {
+            log("[Server] Server is already stopped.");
+            return;
+        }
+        closeSocket();
+        log("[Server] Server stopped.");
+    }
+    virtual void handleClient(int clientSocket) = 0;
 
-    // Function to handle a single client connection
-    void handleClient(int clientSocket);
+    // Gestion des clients
+    virtual bool addClient(int clientID) {
+        if (connectedClients.find(clientID) != connectedClients.end()) {
+            log("[Server] Client " + std::to_string(clientID) + " is already connected.");
+            return false;
+        }
+        connectedClients.insert(clientID);
+        log("[Server] Client " + std::to_string(clientID) + " connected.");
+        return true;
+    }
+    virtual bool removeClient(int clientID) {
+        if (connectedClients.erase(clientID)) {
+            log("[Server] Client " + std::to_string(clientID) + " disconnected.");
+            return true;
+        }
+        log("[Server] Client " + std::to_string(clientID) + " not found.");
+        return false;
+    }
 
-private:
-    // Thread synchronization variables
-    std::mutex leaderMutex;                         // Mutex for the Leader-Follower pattern
-    std::condition_variable leaderCV;               // Condition variable for managing leader threads
-    std::queue<int> clientQueue;                    // Queue to hold the client sockets waiting to be processed
-    std::set<int> activeClientSockets;              // Set to store all active client sockets
-    std::mutex clientSocketMutex;                   // Mutex to protect access to activeClientSockets
+protected:
+    // Configurer le socket
+    void setupServerSocket() {
+        server_fd = socket(AF_INET, SOCK_STREAM, 0);
+        if (server_fd == -1) {
+            throw std::runtime_error("[Server] Failed to create socket.");
+        }
 
-    // Server state variables
-    std::atomic<bool> serverRunning{true};          // Atomic flag to indicate if the server is running
-    std::atomic<int> activeClients{0};              // Counter for the number of currently active clients
-    int serverFd;                                   // File descriptor for the server socket
+        int opt = 1;
+        if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+            closeSocket();
+            throw std::runtime_error("[Server] Failed to set socket options.");
+        }
+
+        sockaddr_in server_addr{};
+        server_addr.sin_family = AF_INET;
+        server_addr.sin_addr.s_addr = INADDR_ANY;
+        server_addr.sin_port = htons(port);
+
+        if (bind(server_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+            closeSocket();
+            throw std::runtime_error("[Server] Bind failed.");
+        }
+
+        if (listen(server_fd, 10) < 0) {
+            closeSocket();
+            throw std::runtime_error("[Server] Listen failed.");
+        }
+
+        log("[Server] Socket configured and listening on " + address + ":" + std::to_string(port));
+    }
+    void closeSocket() {
+        if (server_fd >= 0) {
+            close(server_fd);
+            log("[Server] Socket closed.");
+            server_fd = -1;
+        }
+    }
+
+    virtual void log(const std::string& message) {
+        std::lock_guard<std::mutex> lock(log_mutex);
+        std::cout << message << std::endl;
+    }
 };
 
 #endif // SERVER_HPP

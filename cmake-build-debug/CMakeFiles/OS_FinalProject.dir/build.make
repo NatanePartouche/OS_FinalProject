@@ -69,10 +69,24 @@ include CMakeFiles/OS_FinalProject.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/OS_FinalProject.dir/flags.make
 
+CMakeFiles/OS_FinalProject.dir/src/main.cpp.o: CMakeFiles/OS_FinalProject.dir/flags.make
+CMakeFiles/OS_FinalProject.dir/src/main.cpp.o: /home/ubuntu/CLionProjects/OS_FinalProject/src/main.cpp
+CMakeFiles/OS_FinalProject.dir/src/main.cpp.o: CMakeFiles/OS_FinalProject.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/OS_FinalProject.dir/src/main.cpp.o"
+	/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/OS_FinalProject.dir/src/main.cpp.o -MF CMakeFiles/OS_FinalProject.dir/src/main.cpp.o.d -o CMakeFiles/OS_FinalProject.dir/src/main.cpp.o -c /home/ubuntu/CLionProjects/OS_FinalProject/src/main.cpp
+
+CMakeFiles/OS_FinalProject.dir/src/main.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/OS_FinalProject.dir/src/main.cpp.i"
+	/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ubuntu/CLionProjects/OS_FinalProject/src/main.cpp > CMakeFiles/OS_FinalProject.dir/src/main.cpp.i
+
+CMakeFiles/OS_FinalProject.dir/src/main.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/OS_FinalProject.dir/src/main.cpp.s"
+	/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ubuntu/CLionProjects/OS_FinalProject/src/main.cpp -o CMakeFiles/OS_FinalProject.dir/src/main.cpp.s
+
 CMakeFiles/OS_FinalProject.dir/src/Model/Graph.cpp.o: CMakeFiles/OS_FinalProject.dir/flags.make
 CMakeFiles/OS_FinalProject.dir/src/Model/Graph.cpp.o: /home/ubuntu/CLionProjects/OS_FinalProject/src/Model/Graph.cpp
 CMakeFiles/OS_FinalProject.dir/src/Model/Graph.cpp.o: CMakeFiles/OS_FinalProject.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/OS_FinalProject.dir/src/Model/Graph.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/OS_FinalProject.dir/src/Model/Graph.cpp.o"
 	/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/OS_FinalProject.dir/src/Model/Graph.cpp.o -MF CMakeFiles/OS_FinalProject.dir/src/Model/Graph.cpp.o.d -o CMakeFiles/OS_FinalProject.dir/src/Model/Graph.cpp.o -c /home/ubuntu/CLionProjects/OS_FinalProject/src/Model/Graph.cpp
 
 CMakeFiles/OS_FinalProject.dir/src/Model/Graph.cpp.i: cmake_force
@@ -86,7 +100,7 @@ CMakeFiles/OS_FinalProject.dir/src/Model/Graph.cpp.s: cmake_force
 CMakeFiles/OS_FinalProject.dir/src/Model/MSTFactory.cpp.o: CMakeFiles/OS_FinalProject.dir/flags.make
 CMakeFiles/OS_FinalProject.dir/src/Model/MSTFactory.cpp.o: /home/ubuntu/CLionProjects/OS_FinalProject/src/Model/MSTFactory.cpp
 CMakeFiles/OS_FinalProject.dir/src/Model/MSTFactory.cpp.o: CMakeFiles/OS_FinalProject.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/OS_FinalProject.dir/src/Model/MSTFactory.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/OS_FinalProject.dir/src/Model/MSTFactory.cpp.o"
 	/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/OS_FinalProject.dir/src/Model/MSTFactory.cpp.o -MF CMakeFiles/OS_FinalProject.dir/src/Model/MSTFactory.cpp.o.d -o CMakeFiles/OS_FinalProject.dir/src/Model/MSTFactory.cpp.o -c /home/ubuntu/CLionProjects/OS_FinalProject/src/Model/MSTFactory.cpp
 
 CMakeFiles/OS_FinalProject.dir/src/Model/MSTFactory.cpp.i: cmake_force
@@ -97,24 +111,24 @@ CMakeFiles/OS_FinalProject.dir/src/Model/MSTFactory.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/OS_FinalProject.dir/src/Model/MSTFactory.cpp.s"
 	/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ubuntu/CLionProjects/OS_FinalProject/src/Model/MSTFactory.cpp -o CMakeFiles/OS_FinalProject.dir/src/Model/MSTFactory.cpp.s
 
-CMakeFiles/OS_FinalProject.dir/src/Network/Pipeline.cpp.o: CMakeFiles/OS_FinalProject.dir/flags.make
-CMakeFiles/OS_FinalProject.dir/src/Network/Pipeline.cpp.o: /home/ubuntu/CLionProjects/OS_FinalProject/src/Network/Pipeline.cpp
-CMakeFiles/OS_FinalProject.dir/src/Network/Pipeline.cpp.o: CMakeFiles/OS_FinalProject.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/OS_FinalProject.dir/src/Network/Pipeline.cpp.o"
-	/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/OS_FinalProject.dir/src/Network/Pipeline.cpp.o -MF CMakeFiles/OS_FinalProject.dir/src/Network/Pipeline.cpp.o.d -o CMakeFiles/OS_FinalProject.dir/src/Network/Pipeline.cpp.o -c /home/ubuntu/CLionProjects/OS_FinalProject/src/Network/Pipeline.cpp
+CMakeFiles/OS_FinalProject.dir/src/Model_Test/MST_Tests.cpp.o: CMakeFiles/OS_FinalProject.dir/flags.make
+CMakeFiles/OS_FinalProject.dir/src/Model_Test/MST_Tests.cpp.o: /home/ubuntu/CLionProjects/OS_FinalProject/src/Model_Test/MST_Tests.cpp
+CMakeFiles/OS_FinalProject.dir/src/Model_Test/MST_Tests.cpp.o: CMakeFiles/OS_FinalProject.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/OS_FinalProject.dir/src/Model_Test/MST_Tests.cpp.o"
+	/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/OS_FinalProject.dir/src/Model_Test/MST_Tests.cpp.o -MF CMakeFiles/OS_FinalProject.dir/src/Model_Test/MST_Tests.cpp.o.d -o CMakeFiles/OS_FinalProject.dir/src/Model_Test/MST_Tests.cpp.o -c /home/ubuntu/CLionProjects/OS_FinalProject/src/Model_Test/MST_Tests.cpp
 
-CMakeFiles/OS_FinalProject.dir/src/Network/Pipeline.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/OS_FinalProject.dir/src/Network/Pipeline.cpp.i"
-	/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ubuntu/CLionProjects/OS_FinalProject/src/Network/Pipeline.cpp > CMakeFiles/OS_FinalProject.dir/src/Network/Pipeline.cpp.i
+CMakeFiles/OS_FinalProject.dir/src/Model_Test/MST_Tests.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/OS_FinalProject.dir/src/Model_Test/MST_Tests.cpp.i"
+	/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ubuntu/CLionProjects/OS_FinalProject/src/Model_Test/MST_Tests.cpp > CMakeFiles/OS_FinalProject.dir/src/Model_Test/MST_Tests.cpp.i
 
-CMakeFiles/OS_FinalProject.dir/src/Network/Pipeline.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/OS_FinalProject.dir/src/Network/Pipeline.cpp.s"
-	/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ubuntu/CLionProjects/OS_FinalProject/src/Network/Pipeline.cpp -o CMakeFiles/OS_FinalProject.dir/src/Network/Pipeline.cpp.s
+CMakeFiles/OS_FinalProject.dir/src/Model_Test/MST_Tests.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/OS_FinalProject.dir/src/Model_Test/MST_Tests.cpp.s"
+	/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ubuntu/CLionProjects/OS_FinalProject/src/Model_Test/MST_Tests.cpp -o CMakeFiles/OS_FinalProject.dir/src/Model_Test/MST_Tests.cpp.s
 
 CMakeFiles/OS_FinalProject.dir/src/Network/ActiveObject.cpp.o: CMakeFiles/OS_FinalProject.dir/flags.make
 CMakeFiles/OS_FinalProject.dir/src/Network/ActiveObject.cpp.o: /home/ubuntu/CLionProjects/OS_FinalProject/src/Network/ActiveObject.cpp
 CMakeFiles/OS_FinalProject.dir/src/Network/ActiveObject.cpp.o: CMakeFiles/OS_FinalProject.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/OS_FinalProject.dir/src/Network/ActiveObject.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/OS_FinalProject.dir/src/Network/ActiveObject.cpp.o"
 	/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/OS_FinalProject.dir/src/Network/ActiveObject.cpp.o -MF CMakeFiles/OS_FinalProject.dir/src/Network/ActiveObject.cpp.o.d -o CMakeFiles/OS_FinalProject.dir/src/Network/ActiveObject.cpp.o -c /home/ubuntu/CLionProjects/OS_FinalProject/src/Network/ActiveObject.cpp
 
 CMakeFiles/OS_FinalProject.dir/src/Network/ActiveObject.cpp.i: cmake_force
@@ -125,59 +139,45 @@ CMakeFiles/OS_FinalProject.dir/src/Network/ActiveObject.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/OS_FinalProject.dir/src/Network/ActiveObject.cpp.s"
 	/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ubuntu/CLionProjects/OS_FinalProject/src/Network/ActiveObject.cpp -o CMakeFiles/OS_FinalProject.dir/src/Network/ActiveObject.cpp.s
 
-CMakeFiles/OS_FinalProject.dir/src/Network/Server.cpp.o: CMakeFiles/OS_FinalProject.dir/flags.make
-CMakeFiles/OS_FinalProject.dir/src/Network/Server.cpp.o: /home/ubuntu/CLionProjects/OS_FinalProject/src/Network/Server.cpp
-CMakeFiles/OS_FinalProject.dir/src/Network/Server.cpp.o: CMakeFiles/OS_FinalProject.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/OS_FinalProject.dir/src/Network/Server.cpp.o"
-	/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/OS_FinalProject.dir/src/Network/Server.cpp.o -MF CMakeFiles/OS_FinalProject.dir/src/Network/Server.cpp.o.d -o CMakeFiles/OS_FinalProject.dir/src/Network/Server.cpp.o -c /home/ubuntu/CLionProjects/OS_FinalProject/src/Network/Server.cpp
+CMakeFiles/OS_FinalProject.dir/src/Network/LeaderFollowers.cpp.o: CMakeFiles/OS_FinalProject.dir/flags.make
+CMakeFiles/OS_FinalProject.dir/src/Network/LeaderFollowers.cpp.o: /home/ubuntu/CLionProjects/OS_FinalProject/src/Network/LeaderFollowers.cpp
+CMakeFiles/OS_FinalProject.dir/src/Network/LeaderFollowers.cpp.o: CMakeFiles/OS_FinalProject.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/OS_FinalProject.dir/src/Network/LeaderFollowers.cpp.o"
+	/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/OS_FinalProject.dir/src/Network/LeaderFollowers.cpp.o -MF CMakeFiles/OS_FinalProject.dir/src/Network/LeaderFollowers.cpp.o.d -o CMakeFiles/OS_FinalProject.dir/src/Network/LeaderFollowers.cpp.o -c /home/ubuntu/CLionProjects/OS_FinalProject/src/Network/LeaderFollowers.cpp
 
-CMakeFiles/OS_FinalProject.dir/src/Network/Server.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/OS_FinalProject.dir/src/Network/Server.cpp.i"
-	/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ubuntu/CLionProjects/OS_FinalProject/src/Network/Server.cpp > CMakeFiles/OS_FinalProject.dir/src/Network/Server.cpp.i
+CMakeFiles/OS_FinalProject.dir/src/Network/LeaderFollowers.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/OS_FinalProject.dir/src/Network/LeaderFollowers.cpp.i"
+	/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ubuntu/CLionProjects/OS_FinalProject/src/Network/LeaderFollowers.cpp > CMakeFiles/OS_FinalProject.dir/src/Network/LeaderFollowers.cpp.i
 
-CMakeFiles/OS_FinalProject.dir/src/Network/Server.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/OS_FinalProject.dir/src/Network/Server.cpp.s"
-	/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ubuntu/CLionProjects/OS_FinalProject/src/Network/Server.cpp -o CMakeFiles/OS_FinalProject.dir/src/Network/Server.cpp.s
-
-CMakeFiles/OS_FinalProject.dir/src/main.cpp.o: CMakeFiles/OS_FinalProject.dir/flags.make
-CMakeFiles/OS_FinalProject.dir/src/main.cpp.o: /home/ubuntu/CLionProjects/OS_FinalProject/src/main.cpp
-CMakeFiles/OS_FinalProject.dir/src/main.cpp.o: CMakeFiles/OS_FinalProject.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/OS_FinalProject.dir/src/main.cpp.o"
-	/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/OS_FinalProject.dir/src/main.cpp.o -MF CMakeFiles/OS_FinalProject.dir/src/main.cpp.o.d -o CMakeFiles/OS_FinalProject.dir/src/main.cpp.o -c /home/ubuntu/CLionProjects/OS_FinalProject/src/main.cpp
-
-CMakeFiles/OS_FinalProject.dir/src/main.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/OS_FinalProject.dir/src/main.cpp.i"
-	/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ubuntu/CLionProjects/OS_FinalProject/src/main.cpp > CMakeFiles/OS_FinalProject.dir/src/main.cpp.i
-
-CMakeFiles/OS_FinalProject.dir/src/main.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/OS_FinalProject.dir/src/main.cpp.s"
-	/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ubuntu/CLionProjects/OS_FinalProject/src/main.cpp -o CMakeFiles/OS_FinalProject.dir/src/main.cpp.s
+CMakeFiles/OS_FinalProject.dir/src/Network/LeaderFollowers.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/OS_FinalProject.dir/src/Network/LeaderFollowers.cpp.s"
+	/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ubuntu/CLionProjects/OS_FinalProject/src/Network/LeaderFollowers.cpp -o CMakeFiles/OS_FinalProject.dir/src/Network/LeaderFollowers.cpp.s
 
 # Object files for target OS_FinalProject
 OS_FinalProject_OBJECTS = \
+"CMakeFiles/OS_FinalProject.dir/src/main.cpp.o" \
 "CMakeFiles/OS_FinalProject.dir/src/Model/Graph.cpp.o" \
 "CMakeFiles/OS_FinalProject.dir/src/Model/MSTFactory.cpp.o" \
-"CMakeFiles/OS_FinalProject.dir/src/Network/Pipeline.cpp.o" \
+"CMakeFiles/OS_FinalProject.dir/src/Model_Test/MST_Tests.cpp.o" \
 "CMakeFiles/OS_FinalProject.dir/src/Network/ActiveObject.cpp.o" \
-"CMakeFiles/OS_FinalProject.dir/src/Network/Server.cpp.o" \
-"CMakeFiles/OS_FinalProject.dir/src/main.cpp.o"
+"CMakeFiles/OS_FinalProject.dir/src/Network/LeaderFollowers.cpp.o"
 
 # External object files for target OS_FinalProject
 OS_FinalProject_EXTERNAL_OBJECTS =
 
-bin/OS_FinalProject: CMakeFiles/OS_FinalProject.dir/src/Model/Graph.cpp.o
-bin/OS_FinalProject: CMakeFiles/OS_FinalProject.dir/src/Model/MSTFactory.cpp.o
-bin/OS_FinalProject: CMakeFiles/OS_FinalProject.dir/src/Network/Pipeline.cpp.o
-bin/OS_FinalProject: CMakeFiles/OS_FinalProject.dir/src/Network/ActiveObject.cpp.o
-bin/OS_FinalProject: CMakeFiles/OS_FinalProject.dir/src/Network/Server.cpp.o
-bin/OS_FinalProject: CMakeFiles/OS_FinalProject.dir/src/main.cpp.o
-bin/OS_FinalProject: CMakeFiles/OS_FinalProject.dir/build.make
-bin/OS_FinalProject: CMakeFiles/OS_FinalProject.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX executable bin/OS_FinalProject"
+OS_FinalProject: CMakeFiles/OS_FinalProject.dir/src/main.cpp.o
+OS_FinalProject: CMakeFiles/OS_FinalProject.dir/src/Model/Graph.cpp.o
+OS_FinalProject: CMakeFiles/OS_FinalProject.dir/src/Model/MSTFactory.cpp.o
+OS_FinalProject: CMakeFiles/OS_FinalProject.dir/src/Model_Test/MST_Tests.cpp.o
+OS_FinalProject: CMakeFiles/OS_FinalProject.dir/src/Network/ActiveObject.cpp.o
+OS_FinalProject: CMakeFiles/OS_FinalProject.dir/src/Network/LeaderFollowers.cpp.o
+OS_FinalProject: CMakeFiles/OS_FinalProject.dir/build.make
+OS_FinalProject: CMakeFiles/OS_FinalProject.dir/link.txt
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX executable OS_FinalProject"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/OS_FinalProject.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
-CMakeFiles/OS_FinalProject.dir/build: bin/OS_FinalProject
+CMakeFiles/OS_FinalProject.dir/build: OS_FinalProject
 .PHONY : CMakeFiles/OS_FinalProject.dir/build
 
 CMakeFiles/OS_FinalProject.dir/clean:

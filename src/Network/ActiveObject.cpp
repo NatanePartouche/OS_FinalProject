@@ -1,63 +1,84 @@
-#include "ActiveObject.hpp"
+#include "ActiveObject.hpp" // Inclut le fichier d'en-tête contenant la déclaration de la classe ActiveObject
 
-// Constructor: Initializes the ActiveObject and launches the specified number of worker threads.
-ActiveObject::ActiveObject(int numThreads) : running(true), cancelingTasks(false) {
-    // Launch the specified number of worker threads
-    for (int i = 0; i < numThreads; ++i) {
-        workers.emplace_back(&ActiveObject::workerThread, this);
-    }
+// Constructeur de la classe ActiveObject
+ActiveObject::ActiveObject() : running(false), processing(false) {
+    // Initialise les variables atomiques `running` et `processing` à `false`.
+    // Cela indique que l'objet n'est pas encore actif et qu'aucune tâche n'est en cours.
 }
 
-// Destructor: Ensures that all threads are properly shut down.
+// Destructeur de la classe ActiveObject
 ActiveObject::~ActiveObject() {
-    shutdown(); // Ensure that threads are properly shut down before destruction
+    stop(); // Assure que l'objet est proprement arrêté avant sa destruction
 }
 
-// Adds a new task to the task queue if the ActiveObject is running and not shutting down.
-void ActiveObject::enqueueTask(std::function<void()> task) {
-    std::unique_lock<std::mutex> lock(mtx);
-    // Only enqueue tasks if the object is active and not canceling tasks
-    if (running && !cancelingTasks) {
-        tasks.push(std::move(task)); // Move the task into the queue
-        cv.notify_one(); // Notify one waiting thread that a new task is available
+// Méthode pour ajouter une tâche à la file
+void ActiveObject::enqueue(std::function<void()> task) {
+    {
+        std::lock_guard<std::mutex> lock(queueMutex); // Verrouille l'accès à la file pour éviter les conditions de course
+        taskQueue.push(std::move(task)); // Ajoute la tâche à la file de manière sécurisée
+    }
+    condition.notify_one(); // Réveille le thread de travail si nécessaire, car une nouvelle tâche est disponible
+}
+
+// Méthode pour démarrer l'objet actif
+void ActiveObject::start() {
+    running = true; // Indique que l'objet est actif et prêt à traiter des tâches
+    workerThread = std::thread(&ActiveObject::run, this); // Lance un thread dédié exécutant la méthode `run`
+}
+
+// Méthode pour arrêter l'objet actif
+void ActiveObject::stop() {
+    {
+        std::unique_lock<std::mutex> lock(queueMutex); // Verrouille l'accès à la file
+        running = false;                                  // Indique que l'objet ne doit plus accepter de nouvelles tâches
+        condition.notify_all();                           // Réveille le thread de travail pour terminer sa boucle d'exécution
+
+        // Attend que toutes les tâches en attente soient exécutées avant de terminer
+        condition.wait(lock, [this]() {
+            return taskQueue.empty() && !processing; // Continue d'attendre si des tâches sont encore en cours
+        });
+    }
+
+    // Joindre le thread de travail pour attendre sa fin
+    if (workerThread.joinable()) {
+        workerThread.join(); // Termine proprement le thread une fois que toutes les tâches sont traitées
     }
 }
 
-// Function executed by each worker thread to process tasks from the queue.
-void ActiveObject::workerThread() {
-    while (true) {
-        std::function<void()> task;
+// Fonction principale exécutée par le thread de travail
+void ActiveObject::run() {
+    // Continue tant que `running` est actif ou que la file de tâches n'est pas vide
+    while (running || !taskQueue.empty()) {
+        std::function<void()> task; // Variable pour stocker la tâche à exécuter
         {
-            std::unique_lock<std::mutex> lock(mtx);
-            // Wait for a task to be available, shutdown signal, or task cancellation
-            cv.wait(lock, [this]() { return !tasks.empty() || !running || cancelingTasks; });
+            std::unique_lock<std::mutex> lock(queueMutex); // Verrouille l'accès à la file
+            condition.wait(lock, [this]() {
+                // Attend qu'une tâche soit disponible ou que l'objet ne soit plus actif
+                return !taskQueue.empty() || !running;
+            });
 
-            // If shutting down or canceling tasks, exit the loop
-            if (!running || cancelingTasks) {
+            // Si l'objet n'est plus actif (`running` est faux) et que la file est vide, sortir de la boucle
+            if (!running && taskQueue.empty())
                 break;
-            }
-            if (!tasks.empty()) {
-                // Retrieve and remove the next task from the queue
-                task = std::move(tasks.front());
-                tasks.pop();
-            }
+
+            // Récupère la tâche en tête de la file et la supprime de la file
+            task = std::move(taskQueue.front());
+            taskQueue.pop();
+            processing = true; // Indique qu'une tâche est en cours d'exécution
         }
 
-        // Execute the task outside the locked section
-        if (task) { task(); }
-    }
-}
+        // Exécute la tâche si elle est valide
+        if (task) {
+            task(); // Appelle la tâche encapsulée dans le std::function
+        }
 
-// Shuts down all worker threads gracefully by stopping new tasks and joining threads.
-void ActiveObject::shutdown() {
-    {
-        std::unique_lock<std::mutex> lock(mtx);
-        running = false; // Signal all threads to stop processing tasks
-    }
-    cv.notify_all(); // Wake up all waiting threads to allow them to exit
-    for (std::thread &worker : workers) {
-        if (worker.joinable()) {
-            worker.join(); // Join each thread to ensure graceful shutdown
+        // Vérifie si toutes les tâches sont terminées
+        {
+            std::lock_guard<std::mutex> lock(queueMutex); // Verrouille l'accès à la file
+            if (taskQueue.empty()) {    // Si la file est vide
+                processing = false;     // Indique qu'il n'y a plus de tâche en cours
+                condition.notify_all(); // Notifie les threads en attente que tout est terminé
+            }
         }
     }
 }

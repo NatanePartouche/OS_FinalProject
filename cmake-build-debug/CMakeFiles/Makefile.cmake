@@ -45,6 +45,4 @@ set(CMAKE_MAKEFILE_PRODUCTS
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/OS_FinalProject.dir/DependInfo.cmake"
-  "CMakeFiles/OS_FinalProject_Tests.dir/DependInfo.cmake"
-  "CMakeFiles/clean-all.dir/DependInfo.cmake"
   )

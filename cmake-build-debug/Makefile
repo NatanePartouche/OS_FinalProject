@@ -139,39 +139,12 @@ OS_FinalProject/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject.dir/build.make CMakeFiles/OS_FinalProject.dir/build
 .PHONY : OS_FinalProject/fast
 
-#=============================================================================
-# Target rules for targets named OS_FinalProject_Tests
-
-# Build rule for target.
-OS_FinalProject_Tests: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 OS_FinalProject_Tests
-.PHONY : OS_FinalProject_Tests
-
-# fast build rule for target.
-OS_FinalProject_Tests/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject_Tests.dir/build.make CMakeFiles/OS_FinalProject_Tests.dir/build
-.PHONY : OS_FinalProject_Tests/fast
-
-#=============================================================================
-# Target rules for targets named clean-all
-
-# Build rule for target.
-clean-all: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 clean-all
-.PHONY : clean-all
-
-# fast build rule for target.
-clean-all/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/clean-all.dir/build.make CMakeFiles/clean-all.dir/build
-.PHONY : clean-all/fast
-
 src/Model/Graph.o: src/Model/Graph.cpp.o
 .PHONY : src/Model/Graph.o
 
 # target to build an object file
 src/Model/Graph.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject.dir/build.make CMakeFiles/OS_FinalProject.dir/src/Model/Graph.cpp.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject_Tests.dir/build.make CMakeFiles/OS_FinalProject_Tests.dir/src/Model/Graph.cpp.o
 .PHONY : src/Model/Graph.cpp.o
 
 src/Model/Graph.i: src/Model/Graph.cpp.i
@@ -180,7 +153,6 @@ src/Model/Graph.i: src/Model/Graph.cpp.i
 # target to preprocess a source file
 src/Model/Graph.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject.dir/build.make CMakeFiles/OS_FinalProject.dir/src/Model/Graph.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject_Tests.dir/build.make CMakeFiles/OS_FinalProject_Tests.dir/src/Model/Graph.cpp.i
 .PHONY : src/Model/Graph.cpp.i
 
 src/Model/Graph.s: src/Model/Graph.cpp.s
@@ -189,7 +161,6 @@ src/Model/Graph.s: src/Model/Graph.cpp.s
 # target to generate assembly for a file
 src/Model/Graph.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject.dir/build.make CMakeFiles/OS_FinalProject.dir/src/Model/Graph.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject_Tests.dir/build.make CMakeFiles/OS_FinalProject_Tests.dir/src/Model/Graph.cpp.s
 .PHONY : src/Model/Graph.cpp.s
 
 src/Model/MSTFactory.o: src/Model/MSTFactory.cpp.o
@@ -198,7 +169,6 @@ src/Model/MSTFactory.o: src/Model/MSTFactory.cpp.o
 # target to build an object file
 src/Model/MSTFactory.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject.dir/build.make CMakeFiles/OS_FinalProject.dir/src/Model/MSTFactory.cpp.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject_Tests.dir/build.make CMakeFiles/OS_FinalProject_Tests.dir/src/Model/MSTFactory.cpp.o
 .PHONY : src/Model/MSTFactory.cpp.o
 
 src/Model/MSTFactory.i: src/Model/MSTFactory.cpp.i
@@ -207,7 +177,6 @@ src/Model/MSTFactory.i: src/Model/MSTFactory.cpp.i
 # target to preprocess a source file
 src/Model/MSTFactory.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject.dir/build.make CMakeFiles/OS_FinalProject.dir/src/Model/MSTFactory.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject_Tests.dir/build.make CMakeFiles/OS_FinalProject_Tests.dir/src/Model/MSTFactory.cpp.i
 .PHONY : src/Model/MSTFactory.cpp.i
 
 src/Model/MSTFactory.s: src/Model/MSTFactory.cpp.s
@@ -216,7 +185,6 @@ src/Model/MSTFactory.s: src/Model/MSTFactory.cpp.s
 # target to generate assembly for a file
 src/Model/MSTFactory.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject.dir/build.make CMakeFiles/OS_FinalProject.dir/src/Model/MSTFactory.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject_Tests.dir/build.make CMakeFiles/OS_FinalProject_Tests.dir/src/Model/MSTFactory.cpp.s
 .PHONY : src/Model/MSTFactory.cpp.s
 
 src/Model_Test/MST_Tests.o: src/Model_Test/MST_Tests.cpp.o
@@ -224,7 +192,7 @@ src/Model_Test/MST_Tests.o: src/Model_Test/MST_Tests.cpp.o
 
 # target to build an object file
 src/Model_Test/MST_Tests.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject_Tests.dir/build.make CMakeFiles/OS_FinalProject_Tests.dir/src/Model_Test/MST_Tests.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject.dir/build.make CMakeFiles/OS_FinalProject.dir/src/Model_Test/MST_Tests.cpp.o
 .PHONY : src/Model_Test/MST_Tests.cpp.o
 
 src/Model_Test/MST_Tests.i: src/Model_Test/MST_Tests.cpp.i
@@ -232,7 +200,7 @@ src/Model_Test/MST_Tests.i: src/Model_Test/MST_Tests.cpp.i
 
 # target to preprocess a source file
 src/Model_Test/MST_Tests.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject_Tests.dir/build.make CMakeFiles/OS_FinalProject_Tests.dir/src/Model_Test/MST_Tests.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject.dir/build.make CMakeFiles/OS_FinalProject.dir/src/Model_Test/MST_Tests.cpp.i
 .PHONY : src/Model_Test/MST_Tests.cpp.i
 
 src/Model_Test/MST_Tests.s: src/Model_Test/MST_Tests.cpp.s
@@ -240,7 +208,7 @@ src/Model_Test/MST_Tests.s: src/Model_Test/MST_Tests.cpp.s
 
 # target to generate assembly for a file
 src/Model_Test/MST_Tests.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject_Tests.dir/build.make CMakeFiles/OS_FinalProject_Tests.dir/src/Model_Test/MST_Tests.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject.dir/build.make CMakeFiles/OS_FinalProject.dir/src/Model_Test/MST_Tests.cpp.s
 .PHONY : src/Model_Test/MST_Tests.cpp.s
 
 src/Network/ActiveObject.o: src/Network/ActiveObject.cpp.o
@@ -249,7 +217,6 @@ src/Network/ActiveObject.o: src/Network/ActiveObject.cpp.o
 # target to build an object file
 src/Network/ActiveObject.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject.dir/build.make CMakeFiles/OS_FinalProject.dir/src/Network/ActiveObject.cpp.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject_Tests.dir/build.make CMakeFiles/OS_FinalProject_Tests.dir/src/Network/ActiveObject.cpp.o
 .PHONY : src/Network/ActiveObject.cpp.o
 
 src/Network/ActiveObject.i: src/Network/ActiveObject.cpp.i
@@ -258,7 +225,6 @@ src/Network/ActiveObject.i: src/Network/ActiveObject.cpp.i
 # target to preprocess a source file
 src/Network/ActiveObject.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject.dir/build.make CMakeFiles/OS_FinalProject.dir/src/Network/ActiveObject.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject_Tests.dir/build.make CMakeFiles/OS_FinalProject_Tests.dir/src/Network/ActiveObject.cpp.i
 .PHONY : src/Network/ActiveObject.cpp.i
 
 src/Network/ActiveObject.s: src/Network/ActiveObject.cpp.s
@@ -267,62 +233,31 @@ src/Network/ActiveObject.s: src/Network/ActiveObject.cpp.s
 # target to generate assembly for a file
 src/Network/ActiveObject.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject.dir/build.make CMakeFiles/OS_FinalProject.dir/src/Network/ActiveObject.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject_Tests.dir/build.make CMakeFiles/OS_FinalProject_Tests.dir/src/Network/ActiveObject.cpp.s
 .PHONY : src/Network/ActiveObject.cpp.s
 
-src/Network/Pipeline.o: src/Network/Pipeline.cpp.o
-.PHONY : src/Network/Pipeline.o
+src/Network/LeaderFollowers.o: src/Network/LeaderFollowers.cpp.o
+.PHONY : src/Network/LeaderFollowers.o
 
 # target to build an object file
-src/Network/Pipeline.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject.dir/build.make CMakeFiles/OS_FinalProject.dir/src/Network/Pipeline.cpp.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject_Tests.dir/build.make CMakeFiles/OS_FinalProject_Tests.dir/src/Network/Pipeline.cpp.o
-.PHONY : src/Network/Pipeline.cpp.o
+src/Network/LeaderFollowers.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject.dir/build.make CMakeFiles/OS_FinalProject.dir/src/Network/LeaderFollowers.cpp.o
+.PHONY : src/Network/LeaderFollowers.cpp.o
 
-src/Network/Pipeline.i: src/Network/Pipeline.cpp.i
-.PHONY : src/Network/Pipeline.i
-
-# target to preprocess a source file
-src/Network/Pipeline.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject.dir/build.make CMakeFiles/OS_FinalProject.dir/src/Network/Pipeline.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject_Tests.dir/build.make CMakeFiles/OS_FinalProject_Tests.dir/src/Network/Pipeline.cpp.i
-.PHONY : src/Network/Pipeline.cpp.i
-
-src/Network/Pipeline.s: src/Network/Pipeline.cpp.s
-.PHONY : src/Network/Pipeline.s
-
-# target to generate assembly for a file
-src/Network/Pipeline.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject.dir/build.make CMakeFiles/OS_FinalProject.dir/src/Network/Pipeline.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject_Tests.dir/build.make CMakeFiles/OS_FinalProject_Tests.dir/src/Network/Pipeline.cpp.s
-.PHONY : src/Network/Pipeline.cpp.s
-
-src/Network/Server.o: src/Network/Server.cpp.o
-.PHONY : src/Network/Server.o
-
-# target to build an object file
-src/Network/Server.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject.dir/build.make CMakeFiles/OS_FinalProject.dir/src/Network/Server.cpp.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject_Tests.dir/build.make CMakeFiles/OS_FinalProject_Tests.dir/src/Network/Server.cpp.o
-.PHONY : src/Network/Server.cpp.o
-
-src/Network/Server.i: src/Network/Server.cpp.i
-.PHONY : src/Network/Server.i
+src/Network/LeaderFollowers.i: src/Network/LeaderFollowers.cpp.i
+.PHONY : src/Network/LeaderFollowers.i
 
 # target to preprocess a source file
-src/Network/Server.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject.dir/build.make CMakeFiles/OS_FinalProject.dir/src/Network/Server.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject_Tests.dir/build.make CMakeFiles/OS_FinalProject_Tests.dir/src/Network/Server.cpp.i
-.PHONY : src/Network/Server.cpp.i
+src/Network/LeaderFollowers.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject.dir/build.make CMakeFiles/OS_FinalProject.dir/src/Network/LeaderFollowers.cpp.i
+.PHONY : src/Network/LeaderFollowers.cpp.i
 
-src/Network/Server.s: src/Network/Server.cpp.s
-.PHONY : src/Network/Server.s
+src/Network/LeaderFollowers.s: src/Network/LeaderFollowers.cpp.s
+.PHONY : src/Network/LeaderFollowers.s
 
 # target to generate assembly for a file
-src/Network/Server.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject.dir/build.make CMakeFiles/OS_FinalProject.dir/src/Network/Server.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject_Tests.dir/build.make CMakeFiles/OS_FinalProject_Tests.dir/src/Network/Server.cpp.s
-.PHONY : src/Network/Server.cpp.s
+src/Network/LeaderFollowers.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/OS_FinalProject.dir/build.make CMakeFiles/OS_FinalProject.dir/src/Network/LeaderFollowers.cpp.s
+.PHONY : src/Network/LeaderFollowers.cpp.s
 
 src/main.o: src/main.cpp.o
 .PHONY : src/main.o
@@ -357,9 +292,7 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... test"
-	@echo "... clean-all"
 	@echo "... OS_FinalProject"
-	@echo "... OS_FinalProject_Tests"
 	@echo "... src/Model/Graph.o"
 	@echo "... src/Model/Graph.i"
 	@echo "... src/Model/Graph.s"
@@ -372,12 +305,9 @@ help:
 	@echo "... src/Network/ActiveObject.o"
 	@echo "... src/Network/ActiveObject.i"
 	@echo "... src/Network/ActiveObject.s"
-	@echo "... src/Network/Pipeline.o"
-	@echo "... src/Network/Pipeline.i"
-	@echo "... src/Network/Pipeline.s"
-	@echo "... src/Network/Server.o"
-	@echo "... src/Network/Server.i"
-	@echo "... src/Network/Server.s"
+	@echo "... src/Network/LeaderFollowers.o"
+	@echo "... src/Network/LeaderFollowers.i"
+	@echo "... src/Network/LeaderFollowers.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"

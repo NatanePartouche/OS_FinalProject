@@ -10,9 +10,9 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/ubuntu/CLionProjects/OS_FinalProject/src/Model/Graph.cpp" "CMakeFiles/OS_FinalProject.dir/src/Model/Graph.cpp.o" "gcc" "CMakeFiles/OS_FinalProject.dir/src/Model/Graph.cpp.o.d"
   "/home/ubuntu/CLionProjects/OS_FinalProject/src/Model/MSTFactory.cpp" "CMakeFiles/OS_FinalProject.dir/src/Model/MSTFactory.cpp.o" "gcc" "CMakeFiles/OS_FinalProject.dir/src/Model/MSTFactory.cpp.o.d"
+  "/home/ubuntu/CLionProjects/OS_FinalProject/src/Model_Test/MST_Tests.cpp" "CMakeFiles/OS_FinalProject.dir/src/Model_Test/MST_Tests.cpp.o" "gcc" "CMakeFiles/OS_FinalProject.dir/src/Model_Test/MST_Tests.cpp.o.d"
   "/home/ubuntu/CLionProjects/OS_FinalProject/src/Network/ActiveObject.cpp" "CMakeFiles/OS_FinalProject.dir/src/Network/ActiveObject.cpp.o" "gcc" "CMakeFiles/OS_FinalProject.dir/src/Network/ActiveObject.cpp.o.d"
-  "/home/ubuntu/CLionProjects/OS_FinalProject/src/Network/Pipeline.cpp" "CMakeFiles/OS_FinalProject.dir/src/Network/Pipeline.cpp.o" "gcc" "CMakeFiles/OS_FinalProject.dir/src/Network/Pipeline.cpp.o.d"
-  "/home/ubuntu/CLionProjects/OS_FinalProject/src/Network/Server.cpp" "CMakeFiles/OS_FinalProject.dir/src/Network/Server.cpp.o" "gcc" "CMakeFiles/OS_FinalProject.dir/src/Network/Server.cpp.o.d"
+  "/home/ubuntu/CLionProjects/OS_FinalProject/src/Network/LeaderFollowers.cpp" "CMakeFiles/OS_FinalProject.dir/src/Network/LeaderFollowers.cpp.o" "gcc" "CMakeFiles/OS_FinalProject.dir/src/Network/LeaderFollowers.cpp.o.d"
   "/home/ubuntu/CLionProjects/OS_FinalProject/src/main.cpp" "CMakeFiles/OS_FinalProject.dir/src/main.cpp.o" "gcc" "CMakeFiles/OS_FinalProject.dir/src/main.cpp.o.d"
   )
 

@@ -6,61 +6,30 @@ project(OS_FinalProject)
 
 # Use C++ standard 17
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pthread")
 
-# Include directories where header files (.hpp) are located
-include_directories(src/Model src/Network src/Model_Tests)
+# Include directories where header files are located
+include_directories(src/Model src/Network src/Model_Test)
 
-# Set output directories for compiled files (equivalent to obj/ structure)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+# Add all source files from subdirectories (*.cpp) to the project
+file(GLOB_RECURSE SOURCES_SUBDIRS "src/**/*.cpp")
 
-# Define source files for main project
-set(SOURCES
-        src/Model/Graph.cpp
-        src/Model/MSTFactory.cpp
-        src/Network/Pipeline.cpp
-        src/Network/ActiveObject.cpp
-        src/Network/Server.cpp
-        src/main.cpp
-)
+# Add source files from the root src directory (e.g., src/main.cpp)
+file(GLOB SOURCES_ROOT "src/*.cpp")
 
-# Define header files for main project
-set(HEADERS
-        src/Model/Graph.hpp
-        src/Model/MSTFactory.hpp
-        src/Network/Pipeline.hpp
-        src/Network/ActiveObject.hpp
-        src/Network/Server.hpp
-)
+# Add all header files (*.hpp) for IDE support
+file(GLOB_RECURSE HEADERS "src/**/*.hpp")
+
+# Combine all sources into one list
+set(SOURCES ${SOURCES_ROOT} ${SOURCES_SUBDIRS} ${HEADERS})
+
+# Print detected source and header files (for debugging)
+message(STATUS "Source files: ${SOURCES}")
+message(STATUS "Header files: ${HEADERS}")
 
 # Add the main executable for the project
-add_executable(OS_FinalProject ${SOURCES} ${HEADERS})
+add_executable(OS_FinalProject ${SOURCES})
 
-# Define source files specifically for the test executable
-set(TEST_SOURCES
-        src/Model_Test/MST_Tests.cpp
-        src/Model/Graph.cpp
-        src/Model/MSTFactory.cpp
-        src/Network/Pipeline.cpp
-        src/Network/ActiveObject.cpp
-        src/Network/Server.cpp
-)
-
-# Add the test executable with a unique name
-add_executable(OS_FinalProject_Tests ${TEST_SOURCES})
-
-# Enable testing with CTest (or doctest if configured)
+# Enable testing (optional)
 enable_testing()
-add_test(NAME MSTTests COMMAND OS_FinalProject_Tests)
-
-# Clean command to match 'make clean'
-add_custom_target(clean-all
-        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/cmake_clean.cmake
-        COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_BINARY_DIR}/*
-        COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-        COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
-        COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-        COMMENT "Cleaning all build artifacts"
-)

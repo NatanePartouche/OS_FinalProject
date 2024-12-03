@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <list>
+#include <memory>
 #include <utility>
 #include <string>
 
@@ -36,76 +37,75 @@
  */
 
 class Graph {
-protected:
+public:
     // Vector where each index represents a vertex, and each element is a list of pairs representing edges.
     std::vector<std::list<std::pair<int, int>>> adjList;
+    std::string _algorithmChoice = "prim";
+    std::unique_ptr<Graph> mst;
 
-public:
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    //                           Functions primarily used for random Graph                               //
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+//                          Functions primarily used for random Graph                                //
+///////////////////////////////////////////////////////////////////////////////////////////////////////
     // Constructor to initialize a graph with a given number of vertices.
     Graph(int vertices);
-    ~Graph();
 
+    // Copy constructor
+    Graph(const Graph& other);
+    // Copy assignment operator
+    Graph& operator=(const Graph& other);
+    // Move assignment operator
+    Graph& operator=(Graph&& other) noexcept;
     // Adds an edge between vertices `u` and `v` with the specified weight.
-    void add_edge_on_Graph(int u, int v, int weight);
-
+    void add_edge(int u, int v, int weight);
     // Removes an edge between vertices `u` and `v`.
-    void remove_edge_on_Graph(int u, int v);
-
-    // Changes the weight of the edge between vertices `u` and `v` to `newWeight`.
-    void changeEdgeWeight(int u, int v, int newWeight);
-
-    // Displays the graph structure, showing each vertex and its connected edges.
-    std::string displayGraph();
-
-    // Displays the MST structure, showing each vertex and its connected edges.
-    std::string displayMST();
-
+    void remove_edge(int u, int v);
     // Returns the total number of vertices in the graph.
     int getNumVertices();
-
     // Returns a constant reference to the adjacency list, allowing access to the graph's structure.
     const std::vector<std::list<std::pair<int, int>>>& getAdjList();
-
     // Checks if a given vertex `v` is valid (within the range of defined vertices).
     bool isValidVertex(int v) const;
-
     // Compares this graph with another graph to see if they have the same structure and weights.
     bool compareGraphs(Graph& other);
-
-    // Assignment operator to copy one graph structure into another.
-    Graph& operator=(const Graph& other);
-
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    //            Functions primarily used for MST (Minimum Spanning Tree) operations                    //
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
-
+    // Changes the weight of an existing undirected edge between vertices `u` and `v` to `newWeight`.
+    void changeEdgeWeight(int u, int v, int newWeight);
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+//            Functions primarily used for MST (Minimum Spanning Tree) operations                    //
+///////////////////////////////////////////////////////////////////////////////////////////////////////
     // Returns the total weight of all edges in the MST.
-    int getTotalWeight();
-
+    double getTotalWeight();
+    // Returns the total weight of all edges in the MST.
+    double getTotalWeight_MST();
+    // Displays the graph structure, showing each vertex and its connected edges.
+    std::string displayGraph();
+    // Displays the MST structure, showing each vertex and its connected edges.
+    std::string displayMST();
     // Finds the longest path in the MST (returns a string representing the path in the format "0->9->...").
     std::string getTreeDepthPath_MST();
-
     // Retrieves the heaviest edge in the MST (returns a string in the format "u v w",
     // where u and v are the vertices connected by the edge, and w is the edge weight).
     std::string getMaxWeightEdge_MST();
-
     // Finds the heaviest path in the MST and returns it as a string.
     std::string getMaxWeightPath_MST();
-
     // Retrieves the lightest edge in the MST (returns a string in the format "u v w").
     std::string getMinWeightEdge_MST();
-
     // Calculates the average distance between all pairs of vertices (Xi, Xj) in the MST.
     double getAverageDistance_MST();
+    // Performs a comprehensive analysis of the graph and its MST and stores the results
+    std::string Analysis();
+    /* The Solve method is designed to execute the primary algorithm associated with the graph.
+     * Depending on the context, this method could:
+     *  - Construct the Minimum Spanning Tree (MST) of the graph using the algorithm specified
+     *    by the `_algorithmChoice` member variable (e.g., "prim" for Prim's algorithm).
+     *  - Analyze or manipulate the graph in a way defined by the user.
+     *  - Act as an entry point for solving a particular problem using the graph's structure.
+     *
+     * This function encapsulates the core logic and ensures that the graph's state is updated
+     * or results are computed based on the input and selected algorithm.
+     *
+     * The results or changes performed by this function can be accessed through other member functions
+     * such as `displayGraph`, `displayMST`, or `Analysis`*/
+    void Solve();
 
-    // Function to find the path between two vertices in an MST without calling a helper function.
-    std::string findPath_MST(int u, int v);
 };
-
 #endif // GRAPH_HPP

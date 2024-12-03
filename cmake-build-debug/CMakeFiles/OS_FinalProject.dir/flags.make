@@ -4,7 +4,7 @@
 # compile CXX with /bin/g++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/ubuntu/CLionProjects/OS_FinalProject/src/Model -I/home/ubuntu/CLionProjects/OS_FinalProject/src/Network -I/home/ubuntu/CLionProjects/OS_FinalProject/src/Model_Tests
+CXX_INCLUDES = -I/home/ubuntu/CLionProjects/OS_FinalProject/src/Model -I/home/ubuntu/CLionProjects/OS_FinalProject/src/Network -I/home/ubuntu/CLionProjects/OS_FinalProject/src/Model_Test
 
 CXX_FLAGS =  -Wall -pthread -g -std=gnu++17 -fdiagnostics-color=always
 
