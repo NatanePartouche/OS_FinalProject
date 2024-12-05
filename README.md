@@ -1,58 +1,113 @@
-Explication des commandes :
 
-	• 	 make    :  Cette commande compile tous les fichiers et crée les exécutables server et tests.
-	•  ./server  :  Une fois compilé, cette commande exécute l’exécutable server, correspondant au main du projet.
-	•  ./tests   :  Cette commande exécute l’exécutable tests, qui contient tous les tests de ton projet.
+# OS_FinalProject: Graph Manipulation and Server Execution
 
+## Graph Manipulation
 
+The server provides a command-based interface to dynamically manipulate graphs. Below are the key commands:
 
-My program operates with client connections to a server I have created, 
-leveraging socket-based communication to enable interaction between the client and server.
-How does a socket work?
+### Commands
 
-	1.	Socket Creation: A program creates a socket, which acts as an endpoint for listening for incoming connections or initiating an outgoing one.
-	2.	Connection: A client program uses its socket to connect to a server, which is actively listening on a specific port on a machine. 
-        This connection forms a communication pathway between the client and server.
-	3.	Data Exchange: Once the connection is established, the programs can exchange data back and forth through their sockets. 
-        The data flows between them, enabling real-time communication or data transfer.
-	4.	Closure: After the data exchange is complete, each side closes its socket, which frees up resources and ends the communication.
+1. **Create a Graph**
+    - **Syntax:** `create <number_of_vertices>`
+    - Initializes a graph with the specified number of vertices.
+    - **Example:** `create 5`
 
-Sockets are commonly used in client-server applications. In such setups, one program (the server) listens for connections on a network port, 
-while another program (the client) connects to that server to send or receive data.
+2. **Add an Edge**
+    - **Syntax:** `add <u> <v> <w>`
+    - Adds an edge between vertices `u` and `v` with weight `w`.
+    - **Example:** `add 1 2 10`
 
+3. **Remove an Edge**
+    - **Syntax:** `remove <u> <v>`
+    - Removes the edge between vertices `u` and `v`.
+    - **Example:** `remove 1 2`
 
+4. **Select MST Algorithm**
+    - **Syntax:** `algo <algorithm_name>`
+    - Sets the Minimum Spanning Tree algorithm.  
+      **Options:** `prim`, `kruskal`, `tarjan`, `boruvka`, `integer_mst`
+    - **Example:** `algo prim`
 
+5. **Analyze MST**
+    - Once the graph is manipulated, the server calculates:
+        - Total MST weight
+        - Average distance
+        - Longest and heaviest paths
+        - Heaviest and lightest edges
 
+6. **Shutdown**
+    - **Syntax:** `shutdown`
+    - Disconnects the client.
 
+---
 
+## Server Execution
 
+### Compilation
 
+To build the project:
 
-1. Threads Pool :
-   •	Il y a 4 threads dans le pool de threads qui surveillent la file clientQueue pour traiter les connexions clients.
-   •	Ces threads ne traitent pas directement les requêtes des clients.
-   Leurs rôles est principalement de :
-	- Surveiller la file d’attente pour savoir si de nouveaux clients ont été acceptés par le serveur.
-    - Extraire le socket client de la file d’attente.
-    - Déléguer le traitement de la requête client à l’ActiveObject.
+```bash
+make
+```
 
-2. ActiveObject :
-   •	Il y a un seul ActiveObject global qui est utilisé pour gérer et exécuter les tâches de manière asynchrone.
-   •	L’ActiveObject prend en charge le traitement des requêtes des clients. 
-        Chaque tâche qui est envoyée à l’ActiveObject représente une opération de traitement pour un client connecté (par exemple, la fonction handleClient(clientSocket)).
-   •	Les threads du pool ajoutent des tâches à l’ActiveObject via activeObject.enqueueTask(...), puis se libèrent pour surveiller à nouveau la file clientQueue.
+This generates:
+- `./server`: The main server executable.
+- `./tests`: Test suite executable.
 
-Fonctionnement général :
-	•	Acceptation des connexions : Le thread principal du serveur utilise la fonction accept() pour recevoir les connexions entrantes et les ajoute à la file clientQueue.
-	•	Distribution des connexions : Les threads du pool surveillent clientQueue, prennent les connexions et les passent à l’ActiveObject pour traitement.
-	•	Traitement des requêtes : L’ActiveObject traite chaque requête de manière asynchrone, libérant ainsi les threads du pool pour gérer d’autres connexions.
-Schéma de fonctionnement :
-	1.	Le thread principal accepte les nouvelles connexions et les ajoute à clientQueue.
-	2.	Les threads du pool prennent les connexions de clientQueue et les ajoutent à l’ActiveObject.
-	3.	L’ActiveObject exécute les tâches de traitement des clients.
+---
 
+### Running the Server
 
+#### Pipeline Mode (`-PL`)
 
+```bash
+./server -PL [<port>]
+```
+
+- **Description:** Starts the server in Pipeline mode.
+- **Default Port:** `8080`.
+
+**Example:**
+
+```bash
+./server -PL 9090
+```
+
+#### Leader-Followers Mode (`-LF`)
+
+```bash
+./server -LF [<num_threads>] [<port>]
+```
+
+- **Description:** Starts the server in Leader-Followers mode.
+- **Defaults:**
+    - `num_threads = 4`
+    - `port = 8080`
+
+**Example:**
+
+```bash
+./server -LF 8 9090
+```
+
+---
+
+### Stopping the Server
+
+Press **Enter** in the terminal running the server to stop it gracefully.
+
+---
+
+### Clean Up
+
+To remove build artifacts and executables:
+
+```bash
+make clean
+```
+
+---
 
 
 
@@ -77,10 +132,11 @@ Schéma de fonctionnement :
 │   ├── Network/                                         │
 │   │   ├── ActiveObject.cpp                             │
 │   │   ├── ActiveObject.hpp                             │
-│   │   ├── Pipeline.cpp                                 │
-│   │   ├── Pipeline.hpp                                 │
-│   │   ├── Server.cpp                                   │
-│   │   └── Server.hpp                                   │
+│   │   ├── LeaderFollowers.cpp                          │
+│   │   ├── LeaderFollowers.hpp                          │
+│   │   ├── Server.hpp                                   │
+│   │   ├── Server_LF.hpp                                │
+│   │   └── Server_PL.hpp                                │
 │   └─ main.cpp                                          │
 │                                                        │
 ├── cmake-build-debug/                                   │
@@ -88,3 +144,10 @@ Schéma de fonctionnement :
 ├── Makefile                                             │
 ├── README.md                                            │
 └────────────────────────────────────────────────────────┘
+
+
+
+
+
+make memcheck_server ARGS="-PL 4 8080"
+make memcheck_server ARGS="-LF 4 8080"

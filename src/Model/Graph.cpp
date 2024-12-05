@@ -402,7 +402,7 @@ std::string Graph::Analysis() {
     _Analysis += std::string(15, ' ') + "Heaviest path: " + getMaxWeightPath_MST() + "\n";
     _Analysis += std::string(15, ' ') + "Heaviest edge: " + getMaxWeightEdge_MST() + "\n";
     _Analysis += std::string(15, ' ') + "Lightest edge: " + getMinWeightEdge_MST() + "\n";
-    _Analysis += std::string(15, ' ') + "-------------------------------------------------------\n\n";
+    _Analysis += std::string(15, ' ') + "-------------------------------------------------------\n";
     return _Analysis;
 }
 

@@ -47,16 +47,17 @@ int main(int argc, char* argv[]) {
     // Créez un pointeur vers le serveur
     std::unique_ptr<Server> server;
 
-    try {
         // Instanciez le serveur en fonction du mode choisi
         if (mode == "-LF") {
             std::cout << "Starting Leader-Followers server on port " << port
                       << " with " << num_threads << " threads..." << std::endl;
             server = std::make_unique<Server_LF>("127.0.0.1", port, num_threads);
-        } else if (mode == "-PL") {
+        }
+        else if (mode == "-PL") {
             std::cout << "Starting Pipeline server on port " << port << "..." << std::endl;
             server = std::make_unique<Server_PL>("127.0.0.1", port); // Supprime num_threads
-        } else {
+        }
+        else {
             std::cerr << "Unknown mode: " << mode << std::endl;
             return 1;
         }
@@ -71,11 +72,6 @@ int main(int argc, char* argv[]) {
         // Arrêter le serveur proprement
         server->stop();
 
-    } catch (const std::exception& e) {
-        // Capture les erreurs et affiche un message approprié
-        std::cerr << "Error: " << e.what() << std::endl;
-        return 1;
-    }
 
     std::cout << "Server stopped gracefully." << std::endl;
     return 0;

@@ -98,6 +98,9 @@ void LeaderFollowers::worker_loop() {
                 }
 
                 _leader_active = false; // Libère le rôle de leader pour permettre à d'autres threads de devenir leader.
+
+                // Appeler notify_one avec le mutex verrouillé
+                _cv.notify_one(); // Réveille un autre thread pour qu'il devienne leader.
             }
         }
 
@@ -116,8 +119,5 @@ void LeaderFollowers::worker_loop() {
                 std::cerr << "[LeaderFollowers] Task exception: " << e.what() << std::endl; // Affiche l'erreur.
             }
         }
-
-        // Fin de l'exécution de la tâche par le leader
-        _cv.notify_one(); // Réveille un autre thread en attente pour qu'il devienne leader.
     }
 }

@@ -1,147 +1,171 @@
 #include <thread>
 #include <sstream>
-#include "LeaderFollowers.hpp"       // Inclut la classe Leader-Followers pour gérer les threads.
-#include "../../src/Model/Graph.hpp" // Inclut la classe Graph pour représenter les graphes.
+#include <cerrno>    // Pour errno
+#include <cstring>   // Pour strerror
+#include "LeaderFollowers.hpp"       // Includes Leader-Followers thread pool implementation.
+#include "../../src/Model/Graph.hpp" // Includes the Graph class for graph operations.
 
 /**
- * @brief Server_LF class - Implements a server based on the Leader-Followers pattern.
- *
- * This class extends the abstract `Server` class and uses a thread pool
- * to asynchronously manage client connections and requests.
+ * @class Server_LF
+ * @brief Implements a server using the Leader-Followers pattern.
  */
-class Server_LF : public Server { // Hérite de la classe Server.
+class Server_LF : public Server {
+
 private:
-    LeaderFollowers thread_pool; // Pool de threads basé sur le modèle Leader-Followers.
+    LeaderFollowers thread_pool; // Thread pool for handling client tasks.
 
 public:
 
     /**
-     * @brief Constructor for Server_LF.
+     * @brief Constructor for Leader-Followers server.
      *
-     * Initializes the server with the provided address, port, and number of threads.
-     * Configures the server socket and prepares it to handle incoming client connections.
-     *
-     * @param addr The IP address or hostname on which the server listens.
-     * @param port The port on which the server listens for connections.
-     * @param num_threads The number of threads in the Leader-Followers thread pool.
+     * @param addr Server address (IP).
+     * @param port Server port number.
+     * @param num_threads Number of threads in the pool.
      */
-    Server_LF(const std::string& addr, int port, int num_threads) : Server(addr, port), thread_pool(num_threads) {
-        // Initialise le serveur et le pool de threads.
-        setupServerSocket(); // Configure le socket du serveur.
-        log("[Server_LF] Server configured on " + address + ":" + std::to_string(port)); // Journalise l'adresse et le port.
+    Server_LF(const std::string& addr, int port, int num_threads)
+        : Server(addr, port), thread_pool(num_threads) {
+        setupServerSocket(); // Sets up the server socket.
+        std::cout << "Server_LF configured on " << address << ":" << port << std::endl;
     }
 
     /**
      * @brief Starts the Leader-Followers server.
      *
-     * This method enables the server, accepts incoming connections, and delegates their management
-     * to a thread pool based on the Leader-Followers model.
-     *
-     * - If the server is already running, it will not start again.
-     * - Each client connection is handled by adding tasks to the thread pool.
-     *
-     * @throws std::exception If a critical error occurs during execution.
+     * Accepts client connections and assigns them to threads in the pool.
      */
     void start() override {
-        // Vérifie si le serveur est déjà en cours d'exécution.
-        if (running.exchange(true)) { // `running` est un std::atomic<bool>.
-            log("[Server_LF] Server is already running."); // Journalise l'état.
-            return; // Évite les redémarrages multiples.
+        if (running.exchange(true)) { // Empêche les démarrages multiples.
+            std::cout << "Server_LF is already running." << std::endl;
+            return;
         }
 
-        log("[Server_LF] Server started."); // Journalise que le serveur a démarré.
+        std::cout << "Server_LF started." << std::endl;
 
-        // Boucle principale pour accepter les connexions tant que le serveur est actif.
-        while (running) {
-            sockaddr_in client_addr{}; // Structure pour stocker les informations sur le client.
-            socklen_t client_len = sizeof(client_addr); // Taille de la structure `sockaddr_in`.
-            // Accepte une connexion client.
+        while (running) { // Boucle principale du serveur.
+            sockaddr_in client_addr{}; // Informations sur le client.
+            socklen_t client_len = sizeof(client_addr);
             int client_socket = accept(server_fd, (struct sockaddr*)&client_addr, &client_len);
-            // Si l'appel à `accept` échoue.
-            if (client_socket < 0) {
-                if (running) { // Vérifie que le serveur est toujours actif.
-                    log("[Server_LF] Failed to accept connection."); // Journalise l'erreur.
+
+            if (client_socket < 0) { // Gérer les erreurs lors de la connexion.
+                if (!running) {
+                    std::cout << "Server is shutting down. Exiting accept loop." << std::endl;
+                    break; // Sortir de la boucle si le serveur est en cours d'arrêt.
                 }
-                continue; // Continue avec la prochaine itération.
-            }
-            log("[Server_LF] New client connected: " + std::to_string(client_socket)); // Journalise la connexion d'un nouveau client.
-            // Ajoute le client à la liste des clients connectés.
-            if (!addClient(client_socket)) { // Si l'ajout échoue.
-                close(client_socket); // Ferme le socket pour éviter une fuite de ressources.
+                std::cerr << "Failed to accept connection: " << strerror(errno) << std::endl;
                 continue;
             }
-            // Ajoute une tâche au pool de threads pour gérer la connexion client.
+
+            std::cout << "New client connected: " << client_socket << std::endl;
+
+            if (!addClient(client_socket)) { // Rejeter la connexion si le client ne peut pas être ajouté.
+                close(client_socket);
+                continue;
+            }
+
+            // Assigner le client au pool de threads.
             thread_pool.add_task([this, client_socket]() {
-                handleClient(client_socket); // Gère les interactions avec le client.
+                handleClient(client_socket);
             });
         }
+
+        std::cout << "Server_LF has stopped accepting new connections." << std::endl;
+    }
+
+    void stop() override {
+
+        thread_pool.stop();
+
+        if (!running.exchange(false)) { // Empêche les arrêts multiples.
+            std::cout << "Server_LF is not running." << std::endl;
+            return;
+        }
+
+        std::cout << "Stopping Server_LF..." << std::endl;
+
+        // Fermer le socket du serveur pour interrompre `accept()`
+        if (shutdown(server_fd, SHUT_RDWR) < 0) {
+            std::cerr << "Error shutting down server socket: " << strerror(errno) << std::endl;
+        }
+
+        close(server_fd);
     }
 
     /**
-     * @brief Handles interactions with a client.
+     * @brief Handles client communication.
      *
-     * Reads commands sent by the client, performs operations on the graph,
-     * and sends responses back to the client.
+     * Processes graph commands and responds to the client.
      *
-     * @param client_socket The client's socket descriptor.
+     * @param client_socket The socket descriptor for the client.
      */
     void handleClient(int client_socket) override {
         std::shared_ptr<Graph> graph;
 
-        // Prépare le menu d'aide à envoyer au client.
+        // Prepare the help menu to send to the client.
         std::string helpMenu = "------------------------ COMMAND MENU --------------------------------------------\n";
         helpMenu += "Create a new graph:\n   - Syntax: 'create <number_of_vertices>'\n";
         helpMenu += "Add an edge:\n   - Syntax: 'add <u> <v> <w>'\n";
         helpMenu += "Remove an edge:\n   - Syntax: 'remove <u> <v>'\n";
-        helpMenu += "Choose MST Algorithm:\n   - Syntax: 'algo <algorithm_name>'\n     (prim/kruskal/tarjan/boruvka/integer_mst)\n" ;
+        helpMenu += "Choose MST Algorithm:\n   - Syntax: 'algo <algorithm_name>'\n     (prim/kruskal/tarjan/boruvka/integer_mst)\n";
         helpMenu += "Shutdown:\n   - Syntax: 'shutdown'\n";
         helpMenu += "----------------------------------------------------------------------------------\n";
 
-        send(client_socket, helpMenu.c_str(), helpMenu.size(), 0); // Envoie le menu d'aide au client.
+        send(client_socket, helpMenu.c_str(), helpMenu.size(), 0); // Send help menu to the client.
 
-        char buffer[1024]; // Tampon pour recevoir les commandes du client.
-        while (running) { // Tant que le serveur est actif.
-            int bytesRead = read(client_socket, buffer, sizeof(buffer)); // Lit les données envoyées par le client.
-            if (bytesRead <= 0) { // Si le client se déconnecte ou s'il y a une erreur.
-                std::cout << "Client disconnected.\n";
+        char buffer[1024]; // Buffer to receive client commands.
+        while (running) { // Process commands while the server is active.
+            int bytesRead = read(client_socket, buffer, sizeof(buffer)); // Read data from the client.
+            if (bytesRead <= 0) { // Handle client disconnection.
+                std::cout << "Client disconnected." << std::endl;
                 break;
             }
 
-            // Traite la commande reçue.
-            std::string request(buffer, bytesRead); // Convertit les données reçues en chaîne.
-            std::stringstream ss(request); // Crée un flux à partir de la commande.
+            // Parse the received command.
+            std::string request(buffer, bytesRead);
+            std::stringstream ss(request);
             std::string command;
-            ss >> command; // Extrait la commande principale.
+            ss >> command;
 
-            if (command == "create") {
+            if (command == "create") { // Create a graph.
                 std::string token;
-                if (ss >> token) { // Vérifier si un argument est fourni après "create".
+                if (ss >> token) {
                     try {
-                        int size = std::stoi(token); // Convertir l'argument en entier.
-                        if (size < 0) {
-                            std::string response = "Error: Number of vertices must be greater than or equal to 0.\n";
+                        int size = std::stoi(token);
+                        if (size <= 0) { // Vérifie si le nombre de sommets est <= 0.
+                            std::string response =
+                                "Error: Number of vertices must be > 0.\n"
+                                "Try again: create <number_of_vertices>\n";
                             send(client_socket, response.c_str(), response.size(), 0);
                         } else {
-                            graph = std::make_unique<Graph>(size); // Créer ou réinitialiser le graphe.
-                            std::string response = "Graph created with " + std::to_string(size) + " vertices.\n";
-                            send(client_socket, response.c_str(), response.size(), 0);
+                            // Vérifie s'il y a des arguments supplémentaires
+                            std::string extra;
+                            if (ss >> extra) { // Arguments supplémentaires détectés.
+                                std::string response =
+                                    "Error: Too many arguments provided.\n"
+                                    "Syntax: create <number_of_vertices>\n"
+                                    "Example: create 5\n";
+                                send(client_socket, response.c_str(), response.size(), 0);
+                            } else { // Aucun argument supplémentaire, commande valide.
+                                graph = std::make_unique<Graph>(size);
+                                std::string response =
+                                    "Graph created with " + std::to_string(size) + " vertices.\n";
+                                send(client_socket, response.c_str(), response.size(), 0);
+                            }
                         }
-                    } catch (const std::invalid_argument&) {
-                        // Si l'argument n'est pas un entier valide.
-                        std::string response = "Invalid input. Syntax: 'create <number_of_vertices>'\n";
-                        send(client_socket, response.c_str(), response.size(), 0);
-                    } catch (const std::out_of_range&) {
-                        // Si l'entier est trop grand ou trop petit.
-                        std::string response = "Error: Number out of range.\n";
+                    } catch (...) {
+                        std::string response =
+                            "Invalid input. Syntax: create <number_of_vertices>\n"
+                            "Example: create 5\n";
                         send(client_socket, response.c_str(), response.size(), 0);
                     }
                 } else {
-                    // Aucun argument fourni : ne fait rien et indique l'erreur.
-                    std::string response = "Error: Number of vertices not provided. Syntax: 'create <number_of_vertices>'\n";
+                    std::string response =
+                        "Error: Missing argument. Syntax: create <number_of_vertices>\n"
+                        "Example: create 5\n";
                     send(client_socket, response.c_str(), response.size(), 0);
                 }
             }
-            else if (command == "add") {
+            else if (command == "add") { // Add an edge.
                 if (!graph) {
                     std::string response = "Graph not created. Use 'create' first.\n";
                     send(client_socket, response.c_str(), response.size(), 0);
@@ -157,7 +181,7 @@ public:
                     send(client_socket, response.c_str(), response.size(), 0);
                 }
             }
-            else if (command == "remove") {
+            else if (command == "remove") { // Remove an edge.
                 if (!graph) {
                     std::string response = "Graph not created. Use 'create' first.\n";
                     send(client_socket, response.c_str(), response.size(), 0);
@@ -173,53 +197,65 @@ public:
                     send(client_socket, response.c_str(), response.size(), 0);
                 }
             }
-            else if (command == "algo") {
+            else if (command == "algo") { // Set MST algorithm.
                 if (!graph) {
-                    log("[Server] Graph not initialized when trying to set algorithm.");
+                    std::cerr << "Graph not initialized when trying to set algorithm." << std::endl;
                     std::string response = "Error: Graph not created. Use 'create' first.\n";
                     send(client_socket, response.c_str(), response.size(), 0);
-                    continue; // Continue to the next iteration of the loop
+                    continue;
                 }
-
-                log("[Server] Received 'algo' command.");
                 std::string selectedAlgorithm;
                 if (ss >> selectedAlgorithm) {
-                    log("[Server] Algorithm selected: " + selectedAlgorithm);
                     if (selectedAlgorithm == "prim" || selectedAlgorithm == "kruskal" ||
                         selectedAlgorithm == "boruvka" || selectedAlgorithm == "tarjan" ||
                         selectedAlgorithm == "integer_mst") {
                         graph->_algorithmChoice = selectedAlgorithm;
-                        log("[Server] Algorithm set successfully.");
                         std::string response = "Algorithm set to " + selectedAlgorithm + ".\n";
                         send(client_socket, response.c_str(), response.size(), 0);
-                        } else {
-                            log("[Server] Unknown algorithm: " + selectedAlgorithm);
-                            std::string response = "Error: Unknown algorithm '" + selectedAlgorithm + "'.\n";
-                            send(client_socket, response.c_str(), response.size(), 0);
-                        }
+                    } else {
+                        std::string response = "Error: Unknown algorithm '" + selectedAlgorithm + "'.\n";
+                        send(client_socket, response.c_str(), response.size(), 0);
+                    }
                 } else {
-                    log("[Server] Invalid 'algo' command syntax.");
                     std::string response = "Invalid input. Syntax: 'algo <algorithm_name>'\n";
                     send(client_socket, response.c_str(), response.size(), 0);
                 }
             }
-            else if (command == "shutdown") {
+            else if (command == "shutdown") { // Command to disconnect the client from the server
                 std::string response = "Shutting down client.\n";
-                send(client_socket, response.c_str(), response.size(), 0);
-                break;
+                ssize_t bytes_sent = send(client_socket, response.c_str(), response.size(), 0);
+                if (bytes_sent < 0) {
+                    std::cerr << "Error sending response to client " << client_socket << ": " << strerror(errno) << std::endl;
+                }
+
+                // Optional: Wait a short moment to ensure the client receives the message
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+                // Remove the client (also closes the socket and checks if the server should stop)
+                if (removeClient(client_socket)) {
+                    std::cout << "Client " << client_socket << " has been successfully removed and disconnected." << std::endl;
+                } else {
+                    std::cerr << "Failed to remove client " << client_socket << "." << std::endl;
+                }
+
+                // No need to lock the mutex again here if removeClient handles it
+
+                break; // Exit handling for this client.
             }
-            else {
+            else { // Handle unknown commands.
                 std::string response = "Unknown command. Use 'help' for a list of commands.\n";
                 send(client_socket, response.c_str(), response.size(), 0);
             }
+
             if (graph) {
                 graph->Solve();
-                send(client_socket, graph->Analysis().c_str(), graph->Analysis().size(), 0);
+                std::string analysis = graph->Analysis(); // Assume this method summarizes MST analysis.
+                send(client_socket, analysis.c_str(), analysis.size(), 0);
             }
         }
 
-        close(client_socket); // Ferme la connexion client.
-        std::cout << "Client socket closed.\n"; // Indique que le socket est fermé.
+        close(client_socket); // Close the client connection.
+        std::cout << "Client socket closed." << std::endl;
     }
 
 };

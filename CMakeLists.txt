@@ -9,27 +9,44 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pthread")
 
-# Include directories where header files are located
+# Include directories
 include_directories(src/Model src/Network src/Model_Test)
 
-# Add all source files from subdirectories (*.cpp) to the project
-file(GLOB_RECURSE SOURCES_SUBDIRS "src/**/*.cpp")
+# Group common sources
+file(GLOB_RECURSE MODEL_SOURCES
+        "src/Model/*.cpp"
+        "src/Model/*.hpp"
+)
+file(GLOB_RECURSE NETWORK_SOURCES
+        "src/Network/*.cpp"
+        "src/Network/*.hpp"
+)
+file(GLOB_RECURSE TEST_SOURCES
+        "src/Model_Test/*.cpp"
+        "src/Model_Test/*.hpp"
+)
 
-# Add source files from the root src directory (e.g., src/main.cpp)
-file(GLOB SOURCES_ROOT "src/*.cpp")
+# Main source files for each server mode
+set(SERVER_PL_MAIN "src/main_pl.cpp")
+set(SERVER_LF_MAIN "src/main_lf.cpp")
 
-# Add all header files (*.hpp) for IDE support
-file(GLOB_RECURSE HEADERS "src/**/*.hpp")
+# Add executable for the Pipeline server
+add_executable(server_pl ${SERVER_PL_MAIN} ${MODEL_SOURCES} ${NETWORK_SOURCES})
 
-# Combine all sources into one list
-set(SOURCES ${SOURCES_ROOT} ${SOURCES_SUBDIRS} ${HEADERS})
+# Add executable for the Leader-Followers server
+add_executable(server_lf ${SERVER_LF_MAIN} ${MODEL_SOURCES} ${NETWORK_SOURCES})
 
-# Print detected source and header files (for debugging)
-message(STATUS "Source files: ${SOURCES}")
-message(STATUS "Header files: ${HEADERS}")
+# Add executable for the tests
+add_executable(tests ${TEST_SOURCES} ${MODEL_SOURCES})
 
-# Add the main executable for the project
-add_executable(OS_FinalProject ${SOURCES})
+# Include directories for tests
+target_include_directories(tests PRIVATE src/Model_Test)
 
-# Enable testing (optional)
+# Enable testing
 enable_testing()
+add_test(NAME RunTests COMMAND tests)
+
+# Print status messages
+message(STATUS "Pipeline server executable created: server_pl")
+message(STATUS "Leader-Followers server executable created: server_lf")
+message(STATUS "Tests executable created: tests")
