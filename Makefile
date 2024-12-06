@@ -3,6 +3,9 @@ CXX = g++
 # Compilation flags
 CXXFLAGS = -Wall -std=c++17 -pthread -g
 
+DEFAULT_MODE_SERVER = "\"-LF\""
+DEFAULT_PORT_SERVER = 8080
+
 # Object directories
 OBJ_DIR = obj
 MODEL_DIR = $(OBJ_DIR)/Model
@@ -35,11 +38,11 @@ create_dirs:
 
 # Server executable target
 ./server: $(OBJ_FILES)
-	$(CXX) $(CXXFLAGS) -o ./server $(OBJ_FILES)
+	$(CXX) $(CXXFLAGS) -DDEFAULT_MODE=$(DEFAULT_MODE_SERVER) -DDEFAULT_PORT=$(DEFAULT_PORT_SERVER) -o ./server $(OBJ_FILES)
 
 # Test executable target
 ./tests: $(MODEL_TEST_OBJ) $(MODEL_OBJ)
-	$(CXX) $(CXXFLAGS) -o ./tests $(MODEL_TEST_OBJ) $(MODEL_OBJ)
+	$(CXX) $(CXXFLAGS) -DDEFAULT_MODE=$(DEFAULT_MODE_SERVER) -DDEFAULT_PORT=$(DEFAULT_PORT_SERVER) -o ./tests $(MODEL_TEST_OBJ) $(MODEL_OBJ)
 
 # Compilation rules for Model files
 $(MODEL_DIR)/Graph.o: $(MODEL_SRC)/Graph.cpp $(MODEL_SRC)/Graph.hpp
@@ -61,7 +64,7 @@ $(NETWORK_DIR)/LeaderFollowers.o: $(NETWORK_SRC)/LeaderFollowers.cpp $(NETWORK_S
 
 # Compilation rule for main.o
 $(OBJ_DIR)/main.o: $(SRC_DIR)/main.cpp
-	$(CXX) $(CXXFLAGS) -c $(SRC_DIR)/main.cpp -o $(OBJ_DIR)/main.o
+	$(CXX) $(CXXFLAGS) -DDEFAULT_MODE=$(DEFAULT_MODE_SERVER) -DDEFAULT_PORT=$(DEFAULT_PORT_SERVER) -c $(SRC_DIR)/main.cpp -o $(OBJ_DIR)/main.o
 
 # Clean the project
 clean:

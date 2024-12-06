@@ -1,0 +1,7 @@
+/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles/server_PL.dir
+/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles/server_LF.dir
+/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles/tests.dir
+/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles/mst_tests.dir
+/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles/test.dir
+/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug/CMakeFiles/rebuild_cache.dir

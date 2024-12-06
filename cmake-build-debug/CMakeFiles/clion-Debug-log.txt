@@ -1,0 +1,8 @@
+/opt/CLion/CLion-2024.2.0.1-aarch64/clion-2024.2.0.1/bin/cmake/linux/aarch64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/bin/make -DCMAKE_C_COMPILER=/bin/gcc -DCMAKE_CXX_COMPILER=/bin/g++ -G "Unix Makefiles" -S /home/ubuntu/CLionProjects/OS_FinalProject -B /home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug
+-- Pipeline server executable created: server_PL
+-- Leader-Followers server executable created: server_LF
+-- Tests executable created: tests
+-- MST_Tests executable created: mst_tests
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/ubuntu/CLionProjects/OS_FinalProject/cmake-build-debug

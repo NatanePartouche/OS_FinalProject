@@ -1,0 +1,1 @@
+/bin/g++  -Wall -pthread -g CMakeFiles/server_PL.dir/src/main.cpp.o CMakeFiles/server_PL.dir/src/Model/Graph.cpp.o CMakeFiles/server_PL.dir/src/Model/MSTFactory.cpp.o CMakeFiles/server_PL.dir/src/Network/ActiveObject.cpp.o CMakeFiles/server_PL.dir/src/Network/LeaderFollowers.cpp.o -o server_PL

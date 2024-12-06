@@ -69,55 +69,65 @@ void LeaderFollowers::stop() {
  * - Libère le rôle de leader après exécution.
  */
 void LeaderFollowers::worker_loop() {
-    while (_running) { // Continue tant que `_running` est `true`.
-        Task task; // Conteneur pour stocker la tâche à exécuter.
+    while (_running) {
+        Task task;
 
         {
-            std::unique_lock<std::mutex> lock(_queue_mutex); // Verrouille l'accès à la file des tâches.
+            std::unique_lock<std::mutex> lock(_queue_mutex);
 
             // Attend qu'une tâche soit disponible ou qu'un signal d'arrêt soit émis.
             _cv.wait(lock, [this]() {
-                return !_running || !_task_queue.empty(); // Condition de réveil : arrêt ou tâche disponible.
+                return !_running || !_task_queue.empty();
             });
 
-            // Si le pool est arrêté et qu'il n'y a plus de tâches, quitter la boucle.
-            if (!_running && _task_queue.empty()) return;
+            // Si le pool est arrêté et qu'il n'y a plus de tâches, on quitte.
+            if (!_running && _task_queue.empty())
+                return;
 
-            // Début de la définition du thread leader
-            if (!_leader_active.exchange(true)) { // Si aucun autre thread n'est leader, ce thread devient leader.
+            // Tente de devenir leader si aucun autre ne l'est.
+            if (!_leader_active.exchange(true)) {
                 {
-                    std::lock_guard<std::mutex> log_lock(_log_mutex); // Verrouille l'accès aux logs.
+                    std::lock_guard<std::mutex> log_lock(_log_mutex);
                     std::ostringstream oss;
                     oss << "[LeaderFollowers] Thread " << std::this_thread::get_id() << " became leader.";
-                    std::cout << oss.str() << std::endl; // Affiche que ce thread est devenu leader.
+                    std::cout << oss.str() << std::endl;
                 }
 
-                if (!_task_queue.empty()) { // Vérifie si une tâche est disponible.
-                    task = std::move(_task_queue.front()); // Récupère la tâche en tête de file.
-                    _task_queue.pop(); // Supprime la tâche de la file.
+                if (!_task_queue.empty()) {
+                    task = std::move(_task_queue.front());
+                    _task_queue.pop();
                 }
 
-                _leader_active = false; // Libère le rôle de leader pour permettre à d'autres threads de devenir leader.
+                // IMPORTANT : Ne pas relâcher le leadership ici ni notifier d'autres threads.
+                // On reste leader jusqu'à l'exécution complète de la tâche.
+            } else {
+                // Si on n'est pas devenu leader, continuer la boucle (attendre une autre opportunité).
+                // Le thread leader actuel va exécuter la tâche puis notifier un autre thread.
+                continue;
+            }
+        } // Le mutex `_queue_mutex` est libéré ici.
 
-                // Appeler notify_one avec le mutex verrouillé
-                _cv.notify_one(); // Réveille un autre thread pour qu'il devienne leader.
+        // Exécution de la tâche en dehors de la section critique
+        if (task) {
+            try {
+                {
+                    std::lock_guard<std::mutex> log_lock(_log_mutex);
+                    std::ostringstream oss;
+                    oss << "[LeaderFollowers] Thread " << std::this_thread::get_id() << " is executing a task.";
+                    std::cout << oss.str() << std::endl;
+                }
+                task();
+            } catch (const std::exception &e) {
+                std::lock_guard<std::mutex> log_lock(_log_mutex);
+                std::cerr << "[LeaderFollowers] Task exception: " << e.what() << std::endl;
             }
         }
 
-        // Début de l'exécution de la tâche par le leader
-        if (task) { // Si une tâche a été récupérée.
-            try {
-                {
-                    std::lock_guard<std::mutex> log_lock(_log_mutex); // Verrouille l'accès aux logs.
-                    std::ostringstream oss;
-                    oss << "[LeaderFollowers] Thread " << std::this_thread::get_id() << " is executing a task.";
-                    std::cout << oss.str() << std::endl; // Affiche que ce thread exécute une tâche.
-                }
-                task(); // Exécute la tâche.
-            } catch (const std::exception& e) { // Capture les exceptions levées par la tâche.
-                std::lock_guard<std::mutex> log_lock(_log_mutex); // Verrouille les logs pour signaler une erreur.
-                std::cerr << "[LeaderFollowers] Task exception: " << e.what() << std::endl; // Affiche l'erreur.
-            }
+        // Une fois la tâche exécutée, rendre le leadership et notifier un autre thread.
+        {
+            std::unique_lock<std::mutex> lock(_queue_mutex);
+            _leader_active = false;
+            _cv.notify_one();
         }
     }
 }
