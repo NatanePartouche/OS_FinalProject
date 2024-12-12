@@ -36,10 +36,12 @@
  *  - This structure is efficient for quickly accessing the neighbors of any vertex and is widely used in graph algorithms.
  */
 
+
 class Graph {
 public:
     // Vector where each index represents a vertex, and each element is a list of pairs representing edges.
     std::vector<std::list<std::pair<int, int>>> adjList;
+
     std::string _algorithmChoice = "prim";
     std::unique_ptr<Graph> mst;
 
@@ -48,7 +50,6 @@ public:
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
     // Constructor to initialize a graph with a given number of vertices.
     Graph(int vertices);
-
     // Copy constructor
     Graph(const Graph& other);
     // Copy assignment operator

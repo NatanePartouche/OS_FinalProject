@@ -250,8 +250,6 @@ public:
 
             if(graph){
 
-                graph->Solve();
-
                 // Création des étapes
                 ActiveObject step1, step2, step3, step4;
 
@@ -260,6 +258,7 @@ public:
 
                 // Étape 1 : Ajout des informations de base du graphe
                 step1.enqueue([&]() {
+                    graph->Solve();
                     finalResult += graph->displayGraph();
                     finalResult += graph->displayMST();
                     finalResult += std::string(15, ' ') + "------------------MST Analysis-------------------------\n";

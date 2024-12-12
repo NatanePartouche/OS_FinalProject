@@ -1,57 +1,57 @@
 #ifndef ACTIVEOBJECT_HPP
 #define ACTIVEOBJECT_HPP
 
-// Les directives d'inclusion conditionnelle empêchent les inclusions multiples du fichier d'en-tête.
-// Si le symbole `ACTIVEOBJECT_HPP` n'est pas défini, il est défini ici.
-// Cela garantit que ce fichier n'est inclus qu'une seule fois dans chaque unité de compilation.
+// Inclusion guard to prevent multiple inclusions of this header file.
+// If the symbol `ACTIVEOBJECT_HPP` is not defined, define it now.
+// Ensures that this file is included only once in each compilation unit.
 
-#include <queue>                  // Utilisé pour gérer la file de tâches (std::queue)
-#include <thread>                 // Fournit la classe std::thread pour la gestion des threads
-#include <mutex>                  // Fournit std::mutex pour protéger les ressources partagées
-#include <condition_variable>     // Fournit std::condition_variable pour synchroniser les threads
-#include <functional>             // Fournit std::function pour encapsuler les tâches
-#include <atomic>                 // Fournit std::atomic pour des variables thread-safe
+#include <queue>                  // Used to manage the task queue (std::queue).
+#include <thread>                 // Provides std::thread for thread management.
+#include <mutex>                  // Provides std::mutex to protect shared resources.
+#include <condition_variable>     // Provides std::condition_variable for thread synchronization.
+#include <functional>             // Provides std::function to encapsulate tasks.
+#include <atomic>                 // Provides std::atomic for thread-safe variables.
 
-// Déclaration de la classe `ActiveObject`
+// Declaration of the `ActiveObject` class
 class ActiveObject {
 private:
-    std::queue<std::function<void()>> taskQueue; // File pour stocker les tâches à exécuter.
-                                                 // Chaque tâche est encapsulée dans un std::function<void()>,
-                                                 // ce qui permet de gérer n'importe quelle fonction ou lambda compatible.
+    std::queue<std::function<void()>> taskQueue; // Queue to store tasks to be executed.
+                                                 // Each task is encapsulated in std::function<void()>,
+                                                 // allowing any compatible function or lambda to be managed.
 
-    std::mutex queueMutex;                      // Mutex pour protéger l'accès concurrent à la file de tâches.
-                                                 // Empêche les conditions de course lorsque plusieurs threads
-                                                 // ajoutent ou suppriment des tâches simultanément.
+    std::mutex queueMutex;                      // Mutex to protect concurrent access to the task queue.
+                                                 // Prevents race conditions when multiple threads
+                                                 // add or remove tasks simultaneously.
 
-    std::condition_variable condition;          // Condition pour mettre en pause et réveiller le thread de travail.
-                                                 // Utilisé pour éviter le busy waiting (attente active).
+    std::condition_variable condition;          // Condition variable to pause and wake up the worker thread.
+                                                 // Used to avoid busy waiting (active spinning).
 
-    std::thread workerThread;                   // Le thread dédié qui exécute les tâches.
-                                                 // Il récupère les tâches de la file et les exécute.
+    std::thread workerThread;                   // Dedicated thread to execute tasks.
+                                                 // Fetches tasks from the queue and executes them.
 
-    std::atomic<bool> running;                  // Indique si l'objet actif est en cours d'exécution.
-                                                 // Utilisé pour contrôler le cycle de vie du thread de travail
-                                                 // de manière thread-safe.
+    std::atomic<bool> running;                  // Indicates whether the active object is running.
+                                                 // Used to control the lifecycle of the worker thread
+                                                 // in a thread-safe manner.
 
-    std::atomic<bool> processing;               // Indique si une tâche est actuellement en cours de traitement.
-                                                 // Cela permet de savoir si le thread est occupé.
+    std::atomic<bool> processing;               // Indicates whether a task is currently being processed.
+                                                 // Helps determine if the thread is busy.
 
-    void run();                                  // Méthode privée principale exécutée par le thread.
-                                                 // Elle contient la boucle de traitement des tâches.
+    void run();                                  // Main private method executed by the worker thread.
+                                                 // Contains the task processing loop.
 
 public:
-    ActiveObject();  // Constructeur : initialise les variables de contrôle (running, processing).
-    ~ActiveObject(); // Destructeur : arrête proprement le thread de travail s'il est encore actif.
+    ActiveObject();                              // Constructor: Initializes control variables (running, processing).
+    ~ActiveObject();                             // Destructor: Stops the worker thread gracefully if it is still active.
 
-    void enqueue(std::function<void()> task); // Méthode pour ajouter une tâche à la file.
-                                              // Une tâche est une fonction encapsulée dans std::function<void()>.
+    void enqueue(std::function<void()> task);    // Method to add a task to the queue.
+                                                 // A task is encapsulated in std::function<void()>.
 
-    void start();                             // Méthode pour démarrer l'objet actif.
-                                              // Lance le thread de travail et commence à traiter les tâches.
+    void start();                                // Method to start the active object.
+                                                 // Launches the worker thread and begins task processing.
 
-    void stop();                              // Méthode pour arrêter l'objet actif.
-                                              // Attend que toutes les tâches en file soient terminées
-                                              // avant de terminer le thread proprement.
+    void stop();                                 // Method to stop the active object.
+                                                 // Ensures all queued tasks are completed before
+                                                 // shutting down the thread gracefully.
 };
 
 #endif // ACTIVEOBJECT_HPP

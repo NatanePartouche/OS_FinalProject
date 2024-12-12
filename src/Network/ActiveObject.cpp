@@ -1,83 +1,83 @@
-#include "ActiveObject.hpp" // Inclut le fichier d'en-tête contenant la déclaration de la classe ActiveObject
+#include "ActiveObject.hpp" // Includes the header file containing the declaration of the ActiveObject class
 
-// Constructeur de la classe ActiveObject
+// Constructor of the ActiveObject class
 ActiveObject::ActiveObject() : running(false), processing(false) {
-    // Initialise les variables atomiques `running` et `processing` à `false`.
-    // Cela indique que l'objet n'est pas encore actif et qu'aucune tâche n'est en cours.
+    // Initializes the atomic variables `running` and `processing` to `false`.
+    // This indicates that the object is not active yet and no tasks are being processed.
 }
 
-// Destructeur de la classe ActiveObject
+// Destructor of the ActiveObject class
 ActiveObject::~ActiveObject() {
-    stop(); // Assure que l'objet est proprement arrêté avant sa destruction
+    stop(); // Ensures that the object is properly stopped before destruction.
 }
 
-// Méthode pour ajouter une tâche à la file
+// Method to add a task to the queue
 void ActiveObject::enqueue(std::function<void()> task) {
     {
-        std::lock_guard<std::mutex> lock(queueMutex); // Verrouille l'accès à la file pour éviter les conditions de course
-        taskQueue.push(std::move(task)); // Ajoute la tâche à la file de manière sécurisée
+        std::lock_guard<std::mutex> lock(queueMutex); // Locks access to the queue to avoid race conditions.
+        taskQueue.push(std::move(task)); // Safely adds the task to the queue.
     }
-    condition.notify_one(); // Réveille le thread de travail si nécessaire, car une nouvelle tâche est disponible
+    condition.notify_one(); // Notifies the worker thread that a new task is available.
 }
 
-// Méthode pour démarrer l'objet actif
+// Method to start the active object
 void ActiveObject::start() {
-    running = true; // Indique que l'objet est actif et prêt à traiter des tâches
-    workerThread = std::thread(&ActiveObject::run, this); // Lance un thread dédié exécutant la méthode `run`
+    running = true; // Marks the object as active and ready to process tasks.
+    workerThread = std::thread(&ActiveObject::run, this); // Launches a dedicated thread running the `run` method.
 }
 
-// Méthode pour arrêter l'objet actif
+// Method to stop the active object
 void ActiveObject::stop() {
     {
-        std::unique_lock<std::mutex> lock(queueMutex); // Verrouille l'accès à la file
-        running = false;                                  // Indique que l'objet ne doit plus accepter de nouvelles tâches
-        condition.notify_all();                           // Réveille le thread de travail pour terminer sa boucle d'exécution
+        std::unique_lock<std::mutex> lock(queueMutex); // Locks access to the queue.
+        running = false; // Marks the object as inactive, preventing new tasks from being accepted.
+        condition.notify_all(); // Wakes up the worker thread to allow it to exit the execution loop.
 
-        // Attend que toutes les tâches en attente soient exécutées avant de terminer
+        // Waits until all pending tasks are completed before terminating.
         condition.wait(lock, [this]() {
-            return taskQueue.empty() && !processing; // Continue d'attendre si des tâches sont encore en cours
+            return taskQueue.empty() && !processing; // Waits if there are still tasks being processed.
         });
     }
 
-    // Joindre le thread de travail pour attendre sa fin
+    // Joins the worker thread to ensure it has finished before stopping.
     if (workerThread.joinable()) {
-        workerThread.join(); // Termine proprement le thread une fois que toutes les tâches sont traitées
+        workerThread.join(); // Properly terminates the thread after processing all tasks.
     }
 }
 
-// Fonction principale exécutée par le thread de travail
+// Main function executed by the worker thread
 void ActiveObject::run() {
-    // Continue tant que `running` est actif ou que la file de tâches n'est pas vide
+    // Continues as long as `running` is true or there are tasks in the queue.
     while (running || !taskQueue.empty()) {
-        std::function<void()> task; // Variable pour stocker la tâche à exécuter
+        std::function<void()> task; // Variable to store the task to execute.
         {
-            std::unique_lock<std::mutex> lock(queueMutex); // Verrouille l'accès à la file
+            std::unique_lock<std::mutex> lock(queueMutex); // Locks access to the queue.
             condition.wait(lock, [this]() {
-                // Attend qu'une tâche soit disponible ou que l'objet ne soit plus actif
+                // Waits for a task to become available or for the object to stop.
                 return !taskQueue.empty() || !running;
             });
 
-            // Si l'objet n'est plus actif (`running` est faux) et que la file est vide, sortir de la boucle
+            // If the object is no longer active (`running` is false) and the queue is empty, exit the loop.
             if (!running && taskQueue.empty())
                 break;
 
-            // Récupère la tâche en tête de la file et la supprime de la file
+            // Retrieves the task at the front of the queue and removes it from the queue.
             task = std::move(taskQueue.front());
             taskQueue.pop();
-            processing = true; // Indique qu'une tâche est en cours d'exécution
+            processing = true; // Marks that a task is being processed.
         }
 
-        // Exécute la tâche si elle est valide
+        // Executes the task if it is valid.
         if (task) {
-            task(); // Appelle la tâche encapsulée dans le std::function
+            task(); // Calls the encapsulated task in the std::function.
         }
 
-        // Vérifie si toutes les tâches sont terminées
+        // Checks if all tasks are completed.
         {
-            std::lock_guard<std::mutex> lock(queueMutex); // Verrouille l'accès à la file
-            if (taskQueue.empty()) {    // Si la file est vide
-                processing = false;     // Indique qu'il n'y a plus de tâche en cours
-                condition.notify_all(); // Notifie les threads en attente que tout est terminé
+            std::lock_guard<std::mutex> lock(queueMutex); // Locks access to the queue.
+            if (taskQueue.empty()) {    // If the queue is empty.
+                processing = false;     // Marks that there are no tasks being processed.
+                condition.notify_all(); // Notifies waiting threads that all tasks are finished.
             }
         }
     }
